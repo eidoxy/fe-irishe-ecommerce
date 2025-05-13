@@ -1,5 +1,5 @@
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
-import DefaultInputs from "../../../components/form/FormProduct";
+import DefaultInputs from "../../../components/form/elements/FormProduct";
 import PageMeta from "../../../components/common/PageMeta";
 
 export default function AddProduct() {
