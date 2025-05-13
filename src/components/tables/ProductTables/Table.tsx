@@ -8,106 +8,88 @@ import {
 
 import Badge from "../../ui/badge/Badge";
 
-interface Order {
+interface Product {
   id: number;
-  user: {
-    image: string;
-    name: string;
-    role: string;
-  };
-  projectName: string;
-  team: {
-    images: string[];
-  };
-  status: string;
-  budget: string;
+  image: string;
+  name: string;
+  description: string;
+  stock: number;
+  price: string;
+  category: string;
 }
 
 // Define the table data using the interface
-const tableData: Order[] = [
+const tableData: Product[] = [
   {
     id: 1,
-    user: {
-      image: "/images/user/user-17.jpg",
-      name: "Lindsey Curtis",
-      role: "Web Designer",
-    },
-    projectName: "Agency Website",
-    team: {
-      images: [
-        "/images/user/user-22.jpg",
-        "/images/user/user-23.jpg",
-        "/images/user/user-24.jpg",
-      ],
-    },
-    budget: "3.9K",
-    status: "Active",
+    name: "Wireless Mouse",
+    description: "Ergonomic wireless mouse with adjustable DPI.",
+    stock: 120,
+    price: "$25.99",
+    category: "Electronics",
+    image: "/images/product/product-01.jpg",
   },
   {
     id: 2,
-    user: {
-      image: "/images/user/user-18.jpg",
-      name: "Kaiya George",
-      role: "Project Manager",
-    },
-    projectName: "Technology",
-    team: {
-      images: ["/images/user/user-25.jpg", "/images/user/user-26.jpg"],
-    },
-    budget: "24.9K",
-    status: "Pending",
+    name: "Mechanical Keyboard",
+    description: "RGB backlit mechanical keyboard with blue switches.",
+    stock: 75,
+    price: "$89.99",
+    category: "Electronics",
+    image: "/images/product/product-02.jpg",
   },
   {
     id: 3,
-    user: {
-      image: "/images/user/user-17.jpg",
-      name: "Zain Geidt",
-      role: "Content Writing",
-    },
-    projectName: "Blog Writing",
-    team: {
-      images: ["/images/user/user-27.jpg"],
-    },
-    budget: "12.7K",
-    status: "Active",
+    name: "Gaming Headset",
+    description: "Surround sound gaming headset with noise cancellation.",
+    stock: 50,
+    price: "$59.99",
+    category: "Gaming",
+    image: "/images/product/product-03.jpg",
   },
   {
     id: 4,
-    user: {
-      image: "/images/user/user-20.jpg",
-      name: "Abram Schleifer",
-      role: "Digital Marketer",
-    },
-    projectName: "Social Media",
-    team: {
-      images: [
-        "/images/user/user-28.jpg",
-        "/images/user/user-29.jpg",
-        "/images/user/user-30.jpg",
-      ],
-    },
-    budget: "2.8K",
-    status: "Cancel",
+    name: "4K Monitor",
+    description: "27-inch 4K UHD monitor with HDR support.",
+    stock: 30,
+    price: "$299.99",
+    category: "Electronics",
+    image: "/images/product/product-04.jpg",
   },
   {
     id: 5,
-    user: {
-      image: "/images/user/user-21.jpg",
-      name: "Carla George",
-      role: "Front-end Developer",
-    },
-    projectName: "Website",
-    team: {
-      images: [
-        "/images/user/user-31.jpg",
-        "/images/user/user-32.jpg",
-        "/images/user/user-33.jpg",
-      ],
-    },
-    budget: "4.5K",
-    status: "Active",
+    name: "Portable SSD",
+    description: "1TB portable SSD with USB-C connectivity.",
+    stock: 200,
+    price: "$129.99",
+    category: "Storage",
+    image: "/images/product/product-05.jpg",
   },
 ];
+
+type BadgeColor =
+  | "primary"
+  | "success"
+  | "error"
+  | "warning"
+  | "info"
+  | "light"
+  | "dark";
+
+const badgeColors: BadgeColor[] = [
+  "primary",
+  "success",
+  "error",
+  "warning",
+  "info",
+  "light",
+  "dark",
+];
+
+const getRandomColor = (): BadgeColor => {
+  const randomIndex = Math.floor(Math.random() * badgeColors.length);
+  return badgeColors[randomIndex];
+};
 
 export default function ProductTable() {
   return (
@@ -121,96 +103,78 @@ export default function ProductTable() {
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                User
+                Product
               </TableCell>
               <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                Project Name
+                Category
               </TableCell>
               <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                Team
+                Description
               </TableCell>
               <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                Status
+                Stock
               </TableCell>
               <TableCell
                 isHeader
                 className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                Budget
+                Price
               </TableCell>
             </TableRow>
           </TableHeader>
 
           {/* Table Body */}
           <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-            {tableData.map((order) => (
-              <TableRow key={order.id}>
+            {tableData.map((product) => (
+              <TableRow key={product.id}>
                 <TableCell className="px-5 py-4 sm:px-6 text-start">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 overflow-hidden rounded-full">
+                    <div className="w-16 h-16 overflow-hidden">
                       <img
-                        width={40}
-                        height={40}
-                        src={order.user.image}
-                        alt={order.user.name}
+                        width={64}
+                        height={64}
+                        src={product.image}
+                        alt={product.name}
                       />
                     </div>
                     <div>
                       <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                        {order.user.name}
-                      </span>
-                      <span className="block text-gray-500 text-theme-xs dark:text-gray-400">
-                        {order.user.role}
+                        {product.name}
                       </span>
                     </div>
                   </div>
                 </TableCell>
                 <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                  {order.projectName}
-                </TableCell>
-                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                  <div className="flex -space-x-2">
-                    {order.team.images.map((teamImage, index) => (
-                      <div
-                        key={index}
-                        className="w-6 h-6 overflow-hidden border-2 border-white rounded-full dark:border-gray-900"
-                      >
-                        <img
-                          width={24}
-                          height={24}
-                          src={teamImage}
-                          alt={`Team member ${index + 1}`}
-                          className="w-full size-6"
-                        />
-                      </div>
-                    ))}
+                  <div className="flex items-center gap-2">
+                    <Badge
+                      variant="light"
+                      color={getRandomColor()}
+                    >
+                      {product.category}
+                    </Badge>
                   </div>
                 </TableCell>
-                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                  <Badge
-                    size="sm"
-                    color={
-                      order.status === "Active"
-                        ? "success"
-                        : order.status === "Pending"
-                        ? "warning"
-                        : "error"
-                    }
-                  >
-                    {order.status}
-                  </Badge>
+                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400 text-ellipsis overflow-hidden whitespace-nowrap max-w-[200px]">
+                  {product.description}
                 </TableCell>
-                <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                  {order.budget}
+                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                  {product.stock}
+                </TableCell>
+                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-500 dark:text-gray-400">
+                      {product.price}
+                    </span>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

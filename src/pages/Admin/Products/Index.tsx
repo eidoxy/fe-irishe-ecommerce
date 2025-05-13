@@ -12,7 +12,7 @@ export default function Products() {
       />
       <PageBreadcrumb pageTitle="Product List" />
       <div className="space-y-6">
-        <ComponentCard title="Basic Table 1">
+        <ComponentCard title="Product Table">
           <ProductTable />
         </ComponentCard>
       </div>

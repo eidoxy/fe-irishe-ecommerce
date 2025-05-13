@@ -63,7 +63,7 @@ const Badge: React.FC<BadgeProps> = ({
 
   // Get styles based on size and color variant
   const sizeClass = sizeStyles[size];
-  const colorStyles = variants[variant][color];
+  const colorStyles = variants[variant][color || "primary"];
 
   return (
     <span className={`${baseStyles} ${sizeClass} ${colorStyles}`}>
