@@ -12,7 +12,7 @@ export default function Categories() {
       />
       <PageBreadcrumb pageTitle="Categories" />
       <div className="space-y-6">
-        <ComponentCard title="Basic Table 1">
+        <ComponentCard title="Category Table">
           <CategoryTable />
         </ComponentCard>
       </div>

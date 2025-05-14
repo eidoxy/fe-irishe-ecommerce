@@ -1,5 +1,5 @@
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
-import DefaultInputs from "../../../components/form/elements/FormProduct";
+import FromProduct from "../../../components/form/elements/FormProduct";
 import PageMeta from "../../../components/common/PageMeta";
 
 export default function AddProduct() {
@@ -10,8 +10,8 @@ export default function AddProduct() {
         description="This is React.js Form Elements  Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
       />
       <PageBreadcrumb pageTitle="Add Product" />
-      <div className="mx-auto max-w-4xl">
-        <DefaultInputs />
+      <div className="mx-auto max-w-2xl">
+        <FromProduct />
       </div>
     </div>
   );
