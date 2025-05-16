@@ -10,6 +10,7 @@ import Home from "./pages/Admin/Dashboard/Index";
 import Products from "./pages/Admin/Products/Index";
 import AddProduct from "./pages/Admin/Products/AddProduct";
 import Categories from "./pages/Admin/Categories/Index";
+import HomeProduct from "./pages/User/Home";
 
 export default function App() {
   return (
@@ -29,9 +30,13 @@ export default function App() {
             {/* Categories */}
             <Route path="/categories" element={<Categories />} />
 
+
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />
           </Route>
+
+          {/* Users */}
+          <Route path="/users" element={<HomeProduct />} />
 
           {/* Auth Layout */}
           <Route path="/signin" element={<SignIn />} />
