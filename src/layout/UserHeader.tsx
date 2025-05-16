@@ -29,11 +29,11 @@ const Header = () => {
   };
 
   return (
-    <header className="w-full border-b border-purple-300 bg-white sticky top-0 z-50 shadow-sm">
+    <header className="w-full border-b border-purple-300 bg-blue-200 sticky top-0 z-50 shadow-sm">
       <div className="container mx-auto flex items-center justify-between px-4 md:px-8 lg:px-20 py-3">
         {/* Brand name */}
         <div className="font-bold text-xl md:text-2xl flex items-center">
-          Irishe E
+          <img src="/images/logouser.png" alt="Logo" className="h-10 w-30" />
         </div>
         
         {/* Mobile menu button */}
@@ -61,7 +61,7 @@ const Header = () => {
               value={searchQuery}
               onChange={handleSearchChange}
               onKeyPress={handleKeyPress}
-              className="w-full rounded-md border border-gray-300 py-2 px-4 pr-10 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all duration-300"
+              className="w-full rounded-md border border-black py-2 px-4 pr-10 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all duration-300"
             />
             <button
               onClick={handleSearchSubmit}

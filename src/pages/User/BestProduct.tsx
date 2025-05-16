@@ -93,7 +93,7 @@ const BestSellingProductCard = ({
 
                 {/* Price */}
                 <div className="flex items-center gap-2">
-                    <span className="text-red-500 font-medium">{price}</span>
+                    <span className="text-blue-500 font-medium">{price}</span>
                     {oldPrice && (
                         <span className="text-gray-400 text-sm line-through">{oldPrice}</span>
                     )}
