@@ -14,7 +14,7 @@ interface BestSellingProductProps {
 const bestSellingProducts: BestSellingProductProps[] = [
     {
         id: 1,
-        imageSrc: "/images/product/product-01.jpg",
+        imageSrc: "/images/product/product-01-bg.png",
         title: "The north coat",
         price: "$260",
         oldPrice: "$360",
@@ -23,7 +23,7 @@ const bestSellingProducts: BestSellingProductProps[] = [
     },
     {
         id: 2,
-        imageSrc: "/images/product/product-02.jpg",
+        imageSrc: "/images/product/product-02-bg.png",
         title: "Gucci duffle bag",
         price: "$960",
         oldPrice: "$1160",
@@ -32,7 +32,7 @@ const bestSellingProducts: BestSellingProductProps[] = [
     },
     {
         id: 3,
-        imageSrc: "/images/product/product-03.jpg",
+        imageSrc: "/images/product/product-03-bg.png",
         title: "RGB liquid CPU Cooler",
         price: "$160",
         oldPrice: "$170",
@@ -41,7 +41,7 @@ const bestSellingProducts: BestSellingProductProps[] = [
     },
     {
         id: 4,
-        imageSrc: "/images/product/product-04.jpg",
+        imageSrc: "/images/product/product-05-bg.png",
         title: "Small BookSelf",
         price: "$360",
         oldPrice: "",
