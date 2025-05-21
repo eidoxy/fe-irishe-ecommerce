@@ -16,7 +16,7 @@ interface CardProductUserProps {
 const tableData: CardProductUserProps[] = [
     {
         id: 1,
-        imageSrc: "/images/product/product-01.jpg",
+        imageSrc: "/images/product/product-01-bg.png",
         title: "HAVIT HV-G92 Gamepad",
         price: "$120",
         oldPrice: "$160",
@@ -26,8 +26,8 @@ const tableData: CardProductUserProps[] = [
     },
     {
         id: 2,
-        imageSrc: "/images/product/product-02.jpg",
-        title: "Wireless Mouse",
+        imageSrc: "/images/product/product-02-bg.png",
+        title: "Smart Watch",
         price: "$25.99",
         oldPrice: "$35.00",
         discount: "-25%",
@@ -36,8 +36,8 @@ const tableData: CardProductUserProps[] = [
     },
     {
         id: 3,
-        imageSrc: "/images/product/product-03.jpg",
-        title: "Mechanical Keyboard",
+        imageSrc: "/images/product/product-03-bg.png",
+        title: "Iphone 13 pro max",
         price: "$89.99",
         oldPrice: "$120.00",
         discount: "-30%",
@@ -46,7 +46,7 @@ const tableData: CardProductUserProps[] = [
     },
     {
         id: 4,
-        imageSrc: "/images/product/product-01.jpg",
+        imageSrc: "/images/product/product-05-bg.png",
         title: "HAVIT HV-G92 Gamepad",
         price: "$120",
         oldPrice: "$160",
@@ -56,7 +56,7 @@ const tableData: CardProductUserProps[] = [
     },
     {
         id: 5,
-        imageSrc: "/images/product/product-02.jpg",
+        imageSrc: "/images/product/product-02-bg.png",
         title: "Wireless Mouse",
         price: "$25.99",
         oldPrice: "$35.00",
@@ -66,7 +66,7 @@ const tableData: CardProductUserProps[] = [
     },
     {
         id: 6,
-        imageSrc: "/images/product/product-03.jpg",
+        imageSrc: "/images/product/product-03-bg.png",
         title: "Mechanical Keyboard",
         price: "$89.99",
         oldPrice: "$120.00",
