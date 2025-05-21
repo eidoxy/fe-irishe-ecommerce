@@ -29,7 +29,7 @@ const Header = () => {
   };
 
   return (
-    <header className="w-full border-b border-purple-300 bg-blue-200 sticky top-0 z-50 shadow-sm">
+    <header className="w-full border-b border-bloack-900 bg-blue-900 sticky top-0 z-50 shadow-sm">
       <div className="container mx-auto flex items-center justify-between px-4 md:px-8 lg:px-20 py-3">
         {/* Brand name */}
         <div className="font-bold text-xl md:text-2xl flex items-center">
@@ -117,9 +117,9 @@ const Header = () => {
             <button className="text-gray-700 hover:text-purple-700 transition-colors duration-200">
               <Heart size={20} />
             </button>
-            <button className="text-gray-700 hover:text-purple-700 transition-colors duration-200 relative">
+            <button className="text-gray-700 hover:text-purple-900 transition-colors duration-200 relative">
               <ShoppingCart size={20} />
-              <span className="absolute -top-2 -right-2 bg-purple-600 text-white rounded-full text-xs w-4 h-4 flex items-center justify-center">0</span>
+              <span className="absolute -top-2 -right-2 bg-purple-900 text-white rounded-full text-xs w-4 h-4 flex items-center justify-center">0</span>
             </button>
           </div>
         </div>
