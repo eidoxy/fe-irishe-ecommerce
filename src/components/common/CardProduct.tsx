@@ -1,3 +1,4 @@
+// src/components/CardProduct.tsx
 import { Heart, Eye } from "lucide-react";
 import { useState } from "react";
 
@@ -23,18 +24,20 @@ export default function CardProduct({
   const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <div 
+    <div
       className="relative bg-white shadow-md rounded-lg overflow-hidden transition-all duration-300 hover:shadow-lg"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Discount Badge */}
-      <span className="absolute top-3 left-3 bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded-sm z-10">
-        {discount}
-      </span>
+      {/* Discount Badge - Hanya tampil jika ada diskon */}
+      {discount && (
+        <span className="absolute top-3 left-3 bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded-sm z-10">
+          {discount}
+        </span>
+      )}
 
       {/* Action Icons */}
-      <div className="absolute top-3 right-3 flex flex-col gap-2">
+      <div className="absolute top-3 right-3 flex flex-col gap-2 z-10">
         <button className="bg-white p-1.5 rounded-full shadow hover:bg-gray-100 hover:text-blue-500 transition-colors duration-200">
           <Heart className="w-4 h-4 text-gray-600" />
         </button>
@@ -49,27 +52,34 @@ export default function CardProduct({
           src={imageSrc}
           alt={title}
           className="w-full h-full object-contain p-4 transition-all duration-500"
-          style={{ transform: isHovered ? 'scale(1.05)' : 'scale(1)' }}
+          style={{ transform: isHovered ? "scale(1.05)" : "scale(1)" }}
         />
-        
-        {/* Add to Cart Button - Shows on Hover */}
-        <div 
+
+        {/* Tombol Aksi - Muncul saat hover */}
+        <div
           className={`absolute bottom-0 left-0 right-0 bg-blue-800 text-white py-2 text-center text-sm font-medium cursor-pointer transition-all duration-300 flex items-center justify-center gap-2 ${
-            isHovered ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
+            isHovered ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"
           }`}
         >
-          View Details
+          View Details {/* Atau "Add to Cart" atau aksi lain */}
         </div>
       </div>
 
       {/* Product Info */}
       <div className="p-4">
-        <h3 className="text-sm font-semibold text-gray-800 line-clamp-2 h-10">{title}</h3>
+        <h3 className="text-sm font-semibold text-gray-800 line-clamp-2 h-10">
+          {title}
+        </h3>
 
         {/* Price */}
         <div className="flex items-center gap-2 mt-2">
           <span className="text-blue-700 font-bold">{price}</span>
-          <span className="text-gray-400 text-sm line-through">{oldPrice}</span>
+          {/* Old Price - Hanya tampil jika ada oldPrice */}
+          {oldPrice && (
+            <span className="text-gray-400 text-sm line-through">
+              {oldPrice}
+            </span>
+          )}
         </div>
 
         {/* Rating */}
