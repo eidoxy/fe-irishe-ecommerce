@@ -7,41 +7,14 @@ import {
 } from "../../ui/table";
 
 import Badge from "../../ui/badge/Badge";
+import axios from "axios";
+import { useEffect, useState } from "react";
 
 interface Category {
   id: number;
   name: string;
   description: string;
 }
-
-// Define the table data using the interface
-const tableData: Category[] = [
-  {
-    id: 1,
-    name: "Electronics",
-    description: "Devices and gadgets such as phones, laptops, and accessories.",
-  },
-  {
-    id: 2,
-    name: "Fashion",
-    description: "Clothing, footwear, and accessories for men, women, and kids.",
-  },
-  {
-    id: 3,
-    name: "Home Appliances",
-    description: "Appliances and tools for home improvement and daily use.",
-  },
-  {
-    id: 4,
-    name: "Books",
-    description: "Wide range of books including fiction, non-fiction, and academic.",
-  },
-  {
-    id: 5,
-    name: "Sports",
-    description: "Sports equipment, apparel, and accessories.",
-  },
-];
 
 type BadgeColor =
   | "primary"
@@ -68,49 +41,71 @@ const getRandomColor = (): BadgeColor => {
 };
 
 export default function CategoryTable() {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:3000/api/categories")
+      .then((response) => {
+        setCategories(response.data.data);
+      })
+      .catch((error) => {
+        console.error("Failed to fetch categories:", error);
+        setError("Failed to load data.");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
+
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
       <div className="max-w-full overflow-x-auto">
-        <Table>
-          {/* Table Header */}
-          <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
-            <TableRow>
-              <TableCell
-                isHeader
-                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-              >
-                Name
-              </TableCell>
-              <TableCell
-                isHeader
-                className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-              >
-                Description
-              </TableCell>
-            </TableRow>
-          </TableHeader>
-
-          {/* Table Body */}
-          <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-            {tableData.map((category) => (
-              <TableRow key={category.id}>
-                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                  <div className="flex items-center gap-2">
-                    <Badge
-                      variant="light"
-                      color={getRandomColor()}
-                    >
-                      {category.name}
-                    </Badge>
-                  </div>
+        {loading ? (
+          <div className="p-4 text-gray-500 dark:text-gray-400">Loading...</div>
+        ) : error ? (
+          <div className="p-4 text-red-500 dark:text-red-400">{error}</div>
+        ) : (
+          <Table>
+            {/* Table Header */}
+            <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
+              <TableRow>
+                <TableCell
+                  isHeader
+                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                >
+                  Name
                 </TableCell>
-                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400 text-ellipsis overflow-hidden whitespace-nowrap max-w-xl">
-                  {category.description}
+                <TableCell
+                  isHeader
+                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                >
+                  Description
                 </TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+
+            {/* Table Body */}
+            <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
+              {categories.map((category) => (
+                <TableRow key={category.id}>
+                  <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="light" color={getRandomColor()}>
+                        {category.name}
+                      </Badge>
+                    </div>
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400 text-ellipsis overflow-hidden whitespace-nowrap max-w-xl">
+                    {category.description}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </div>
     </div>
   );
