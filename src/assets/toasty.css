@@ -1,0 +1,16 @@
+/* Create src/styles/toast.css */
+:root {
+  --toastify-z-index: 9999;
+}
+
+.Toastify__toast-container {
+  z-index: var(--toastify-z-index) !important;
+}
+
+.Toastify__toast {
+  z-index: var(--toastify-z-index) !important;
+}
+
+.Toastify__toast-container--top-right {
+  top: 80px; 
+}

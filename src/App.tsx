@@ -1,4 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import SignIn from "./pages/Auth/SignIn";
 import SignUp from "./pages/Auth/SignUp";
 import NotFound from "./pages/NotFound";
@@ -12,11 +14,24 @@ import AddProduct from "./pages/Admin/Products/AddProduct";
 import Categories from "./pages/Admin/Categories/Index";
 import HomeProduct from "./pages/User/Home";
 import AllFlashSalesPage from "./pages/User/AllflashSalesPage"; 
+import "./assets/toasty.css"
 
 export default function App() {
   return (
     <>
       <Router>
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
         <ScrollToTop />
         <Routes>
           {/* Dashboard Layout */}
