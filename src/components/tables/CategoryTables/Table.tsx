@@ -47,7 +47,7 @@ export default function CategoryTable() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:3000/api/categories")
+      .get("http://47.128.233.82:3000/api/categories")
       .then((response) => {
         setCategories(response.data.data);
       })
