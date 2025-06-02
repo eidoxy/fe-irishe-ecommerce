@@ -6,7 +6,7 @@ export interface Product {
   description?: string;
   stock: number;
   price: number;
-  imageUrl?: string;
+  imageUrl: string;
 }
 
 export interface ProductResponse {
