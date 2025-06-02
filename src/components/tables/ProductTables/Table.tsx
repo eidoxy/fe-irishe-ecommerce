@@ -147,7 +147,7 @@ export default function ProductTable() {
           </TableHeader>
           <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
             {products.length === 0 && !loading ? (
-                <TableRow>
+                <TableRow key="no-products">
                     <TableCell className="px-5 py-4 text-center text-gray-500 dark:text-gray-400">
                         No products found.
                     </TableCell>
