@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import SignIn from "./pages/Auth/SignIn";
 import SignUp from "./pages/Auth/SignUp";
 import NotFound from "./pages/NotFound";
@@ -11,6 +11,7 @@ import Products from "./pages/Admin/Products/Index";
 import AddProduct from "./pages/Admin/Products/AddProduct";
 import Categories from "./pages/Admin/Categories/Index";
 import HomeProduct from "./pages/User/Home";
+import AllFlashSalesPage from "./pages/User/AllflashSalesPage"; 
 
 export default function App() {
   return (
@@ -37,6 +38,9 @@ export default function App() {
 
           {/* Users */}
           <Route path="/users" element={<HomeProduct />} />
+
+           {/* Halaman "View All" untuk Flash Sales */}
+          <Route path="/users/flash-sales" element={<AllFlashSalesPage />} /> {/* <-- Tambahkan route ini */}
 
           {/* Auth Layout */}
           <Route path="/signin" element={<SignIn />} />

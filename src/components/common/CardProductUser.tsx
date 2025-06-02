@@ -3,13 +3,18 @@ import { useState, useEffect } from "react";
 import CardProduct from "./CardProduct"; // Sesuaikan path jika perlu
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import axios from "axios";
-import { Product } from "../../types/Product"; // Sesuaikan path jika perlu
+import { Product } from "../../types/Product";
+import { Link } from "react-router-dom"; // Sesuaikan path jika perlu
 
 export default function CardProductUser() {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [scrollPosition, setScrollPosition] = useState(0);
+    const [containerWidth, setContainerWidth] = useState(0);
+    const [scrollWidth, setScrollWidth] = useState(0);
+
+    const MAX_ITEMS_HOMEPAGE = 8;
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -17,20 +22,15 @@ export default function CardProductUser() {
             setError(null);
             try {
                 const response = await axios.get('http://47.128.233.82:3000/api/products');
-
-                // Memastikan data yang diterima adalah array atau bisa diubah menjadi array produk
                 if (Array.isArray(response.data)) {
                     setProducts(response.data);
                 } else if (response.data && Array.isArray(response.data.data)) {
-                    // Umum jika API membungkus array dalam properti 'data'
                     setProducts(response.data.data);
                 } else if (response.data && Array.isArray(response.data.products)) {
-                    // Umum jika API membungkus array dalam properti 'products'
                     setProducts(response.data.products);
                 } else {
-                    // Jika struktur tidak dikenali atau data null/undefined
                     console.warn("Struktur data API tidak dikenali atau data kosong. Menampilkan daftar produk kosong.");
-                    setProducts([]); // Pastikan products tetap array untuk mencegah error .map
+                    setProducts([]);
                 }
             } catch (err) {
                 console.error("Error fetching products:", err);
@@ -39,19 +39,37 @@ export default function CardProductUser() {
                 } else {
                     setError("Terjadi kesalahan yang tidak terduga.");
                 }
-                setProducts([]); // Set ke array kosong jika terjadi error fetch
+                setProducts([]);
             } finally {
                 setLoading(false);
             }
         };
-
         fetchProducts();
     }, []); // Dependensi kosong, fetch hanya sekali saat mount
+
+    useEffect(() => {
+        const container = document.getElementById('product-scroll-container');
+        if (container) {
+            const updateDimensions = () => {
+                setContainerWidth(container.clientWidth);
+                setScrollWidth(container.scrollWidth);
+            };
+            updateDimensions(); // Initial call
+            // Update on resize or when products change (re-render might affect scrollWidth)
+            window.addEventListener('resize', updateDimensions);
+            // Watch for product changes if it affects scrollWidth significantly
+            // For simplicity, this effect runs once. Could add 'products' to dependency array
+            // if dynamic loading of more items in this component happens.
+            return () => window.removeEventListener('resize', updateDimensions);
+        }
+    }, [products]); // Re-run if products change, as scrollWidth might change
+
+    const scrollAmount = 300; // Amount to scroll per click
 
     const scrollLeft = () => {
         const container = document.getElementById('product-scroll-container');
         if (container) {
-            const newPosition = Math.max(scrollPosition - 300, 0);
+            const newPosition = Math.max(scrollPosition - scrollAmount, 0);
             container.scrollTo({ left: newPosition, behavior: 'smooth' });
             setScrollPosition(newPosition);
         }
@@ -60,7 +78,10 @@ export default function CardProductUser() {
     const scrollRight = () => {
         const container = document.getElementById('product-scroll-container');
         if (container) {
-            const newPosition = Math.min(scrollPosition + 300, container.scrollWidth - container.clientWidth);
+            // Ensure scrollWidth is up-to-date if products load dynamically
+            const currentScrollWidth = container.scrollWidth;
+            const currentClientWidth = container.clientWidth;
+            const newPosition = Math.min(scrollPosition + scrollAmount, currentScrollWidth - currentClientWidth);
             container.scrollTo({ left: newPosition, behavior: 'smooth' });
             setScrollPosition(newPosition);
         }
@@ -68,7 +89,7 @@ export default function CardProductUser() {
 
     if (loading) {
         return (
-            <div className="flex justify-center items-center h-64">
+            <div className="flex justify-center items-center h-64 bg-gray-50">
                 <p className="text-lg text-gray-500">Loading products...</p>
             </div>
         );
@@ -76,13 +97,15 @@ export default function CardProductUser() {
 
     if (error) {
         return (
-            <div className="container mx-auto px-4 md:px-8 lg:px-20 py-8 text-center">
+            <div className="container mx-auto px-4 md:px-8 lg:px-20 py-8 text-center bg-gray-50">
+                <h2 className="text-2xl font-semibold text-gray-800 mb-4">Flash Sales</h2>
                 <p className="text-lg text-red-500">Error: {error}</p>
-                <p className="text-gray-600">Tidak dapat memuat produk. Periksa koneksi Anda atau coba lagi nanti.</p>
+                <p className="text-gray-600">Tidak dapat memuat produk.</p>
             </div>
         );
     }
 
+    const displayProducts = products.slice(0, MAX_ITEMS_HOMEPAGE);
     // Pesan ini akan ditampilkan jika setelah loading dan tidak ada error, products tetap kosong
     if (products.length === 0) {
         return (
@@ -91,6 +114,33 @@ export default function CardProductUser() {
             </div>
         );
     }
+
+    if (displayProducts.length === 0) {
+        return (
+            <div className="flex flex-col py-8 bg-gray-50">
+                <div className="container mx-auto px-4 md:px-8 lg:px-20">
+                    <div className="flex items-center mb-2">
+                        <span className="bg-blue-500 h-6 w-1 mr-2 rounded hidden md:block"></span>
+                        <h1 className="text-lg font-bold text-blue-500">Today's</h1>
+                    </div>
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-2xl font-semibold text-gray-800">Flash Sales</h2>
+                        <Link
+                            to="/users/flash-sales" // <-- Path ke halaman baru, disesuaikan dengan routing
+                            className="bg-blue-500 hover:bg-blue-500 text-white px-4 py-2 rounded text-sm font-medium transition-colors duration-200"
+                        >
+                            View All
+                        </Link>
+                    </div>
+                    <p className="text-lg text-gray-500 text-center py-10">Tidak ada produk flash sale yang tersedia saat ini.</p>
+                </div>
+            </div>
+        );
+    }
+
+    const canScrollLeft = scrollPosition > 0;
+    const canScrollRight = containerWidth < scrollWidth && scrollPosition < (scrollWidth - containerWidth);
+
 
     return (
         <div className="flex flex-col py-8 bg-gray-50">
@@ -101,29 +151,37 @@ export default function CardProductUser() {
                 </div>
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-2xl font-semibold text-gray-800">Flash Sales</h2>
-                    <div className="flex items-center gap-3">
-                        <button
-                            onClick={scrollLeft}
-                            className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-blue-500 hover:bg-purple-100 hover:border-purple-300 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                            disabled={scrollPosition === 0}
+                    <div className="flex items-center gap-2 md:gap-3">
+                        {/* Tombol View All */}
+                        <Link
+                            to="/users/flash-sales" // <-- Path ke halaman baru, disesuaikan dengan routing
+                            className="px-3 py-1.5 text-sm font-medium text-blue-500 bg-transparent border border-blue-500 rounded-md hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
                         >
-                            <ChevronLeft size={18} />
-                        </button>
-                        <button
-                            onClick={scrollRight}
-                            className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-blue-500 hover:bg-purple-100 hover:border-purple-300 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                            disabled={
-                                document.getElementById('product-scroll-container') ?
-                                    scrollPosition >= document.getElementById('product-scroll-container')!.scrollWidth - document.getElementById('product-scroll-container')!.clientWidth - 1 :
-                                    products.length <= 4 // Fallback sederhana, bisa disesuaikan dengan jumlah item per tampilan
-                            }
-                        >
-                            <ChevronRight size={18} />
-                        </button>
+                            View All
+                        </Link>
+                        {displayProducts.length > 3 && ( // Hanya tampilkan tombol scroll jika item lebih dari yang terlihat (misal 3-4 item)
+                            <>
+                                <button
+                                    onClick={scrollLeft}
+                                    className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-blue-500 hover:bg-purple-100 hover:border-purple-300 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    disabled={!canScrollLeft}
+                                    aria-label="Scroll Left"
+                                >
+                                    <ChevronLeft size={18} />
+                                </button>
+                                <button
+                                    onClick={scrollRight}
+                                    className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-blue-500 hover:bg-purple-100 hover:border-purple-300 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    disabled={!canScrollRight}
+                                    aria-label="Scroll Right"
+                                >
+                                    <ChevronRight size={18} />
+                                </button>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
-
             <div
                 id="product-scroll-container"
                 className="container mx-auto overflow-x-auto px-4 md:px-8 lg:px-20 scrollbar-hide"
