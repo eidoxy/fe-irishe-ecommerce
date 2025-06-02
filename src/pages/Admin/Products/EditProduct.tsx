@@ -14,7 +14,7 @@ export default function EditProduct() {
       />
       <PageBreadcrumb pageTitle="Edit Product" />
       <div className="mx-auto max-w-2xl">
-        <FormEditProduct productId={id ? parseInt(id) : null} />
+        <FormEditProduct productId={id ? parseInt(id, 10) : null} />
       </div>
     </div>
   )
