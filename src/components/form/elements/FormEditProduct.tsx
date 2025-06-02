@@ -9,6 +9,8 @@ import TextArea from "../input/TextArea.tsx";
 import Select from "../Select.tsx";
 import DropzoneComponent from "../input/DropZone.tsx";
 
+import { Product } from "../../../models/product.model.ts";
+
 import {
   CategoryResponse,
   CategorySelectOption
@@ -18,7 +20,11 @@ import {
   ProductFormData,
 } from "../../../models/form.model.ts";
 
-export default function FormProduct() {
+interface FormEditProductProps {
+  productId?: number | null;
+}
+
+export default function FormEditProduct({ productId }: FormEditProductProps) {
   const navigate = useNavigate();
   
   const [formData, setFormData] = useState<ProductFormData>({
@@ -30,9 +36,12 @@ export default function FormProduct() {
     imageFile: null,
   });
 
+  const [existingImageUrl, setExistingImageUrl] = useState<string>("");
   const [categoryOptions, setCategoryOptions] = useState<CategorySelectOption[]>([]);
   const [loadingCategories, setLoadingCategories] = useState<boolean>(true);
+  const [loadingProduct, setLoadingProduct] = useState<boolean>(true);
   const [categoryError, setCategoryError] = useState<string | null>(null);
+  const [productError, setProductError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const [errors, setErrors] = useState({
@@ -43,7 +52,50 @@ export default function FormProduct() {
     price: "",
     image: ""
   });
+
+  // Fetch product data if productId is provided
+  useEffect(() => {
+    const fetchProduct = async () => {
+      if (!productId) {
+        setProductError("No product ID provided");
+        setLoadingProduct(false);
+        return;
+      }
+
+      setLoadingProduct(true);
+      setProductError(null);
+      
+      try {
+        const response = await fetch(`http://47.128.233.82:3000/api/products/${productId}`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch product: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        const product: Product = result.data;
+
+        setFormData({
+          categoryId: product.categoryId,
+          name: product.name,
+          description: product.description,
+          stock: String(product.stock),
+          price: String(product.price),
+          imageFile: null,
+        });
+        
+        setExistingImageUrl(product.imageUrl);
+      } catch (error) {
+        console.error("Error fetching product:", error);
+        setProductError(error instanceof Error ? error.message : "An unknown error occurred");
+      } finally {
+        setLoadingProduct(false);
+      }
+    };
+
+    fetchProduct();
+  }, [productId]);
   
+  // Fetch categories for the select input
   useEffect(() => {
     const fetchCategories = async () => {
       setLoadingCategories(true);
@@ -111,7 +163,7 @@ export default function FormProduct() {
       isValid = false;
     }
 
-    if (!formData.imageFile) {
+    if (!formData.imageFile && !existingImageUrl) {
       newErrors.image = "Product image is required";
       isValid = false;
     }
@@ -214,8 +266,8 @@ export default function FormProduct() {
       const apiFormData = createApiFormData();
       console.log("Submitting FormData:", Object.fromEntries(apiFormData.entries()));
 
-      const response = await fetch("http://47.128.233.82:3000/api/products/create", {
-        method: "POST",
+      const response = await fetch(`http://47.128.233.82:3000/api/products/update/${productId}`, {
+        method: "PUT",
         body: apiFormData,
       });
 
@@ -260,11 +312,40 @@ export default function FormProduct() {
     }
   };
 
+  if (loadingProduct) {
+    return <div className="p-4 text-center">Loading product data...</div>;
+  }
+
+  if (productError) {
+    return <div className="p-4 text-center text-red-500">Error: {productError}</div>;
+  }
+  
   return (
     <ComponentCard title="Create Product">
       <form onSubmit={handleSubmit} className="space-y-6">
+        {existingImageUrl && (
+          <div className="mb-4">
+            <Label>Current Image</Label>
+            <div className="mt-2 p-4 border-2 border-dashed border-gray-300 rounded-lg">
+              <img 
+                src={existingImageUrl} 
+                alt="Current product" 
+                className="max-w-full h-48 object-cover rounded-lg mx-auto"
+                onError={(e) => {
+                  console.error("Failed to load image:", existingImageUrl);
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+              <p className="text-sm text-gray-500 text-center mt-2">Current product image</p>
+            </div>
+          </div>
+        )}
+        
         <div>
-          <DropzoneComponent onFileSelect={handleFileSelect} selectedFile={formData.imageFile} />
+          <DropzoneComponent 
+            onFileSelect={handleFileSelect} 
+            selectedFile={formData.imageFile}
+          />
           {errors.image && <p className="mt-1 text-sm text-red-600">{errors.image}</p>}
         </div>
         <div>
@@ -343,7 +424,7 @@ export default function FormProduct() {
               : 'bg-blue-500 hover:bg-blue-600 hover:shadow-lg'
           }`}
         >
-          {isSubmitting ? 'Creating...' : 'Create Product'}
+          {isSubmitting ? 'Updating...' : 'Update Product'}
         </button>
       </form>
     </ComponentCard>

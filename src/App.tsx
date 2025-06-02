@@ -11,6 +11,8 @@ import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Admin/Dashboard/Index";
 import Products from "./pages/Admin/Products/Index";
 import AddProduct from "./pages/Admin/Products/AddProduct";
+import EditProduct from "./pages/Admin/Products/EditProduct";
+
 import Categories from "./pages/Admin/Categories/Index";
 import HomeProduct from "./pages/User/Home";
 import AllFlashSalesPage from "./pages/User/AllflashSalesPage"; 
@@ -42,6 +44,9 @@ export default function App() {
             {/* Products */}
             <Route path="/products" element={<Products />} />
             <Route path="/products/add" element={<AddProduct />} />
+            <Route path="/products/edit/:id" element={<EditProduct />} />
+
+            {/* Flash Sales */}
 
             {/* Categories */}
             <Route path="/categories" element={<Categories />} />

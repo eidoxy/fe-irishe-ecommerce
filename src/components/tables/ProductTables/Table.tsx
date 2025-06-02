@@ -5,20 +5,11 @@ import {
   TableCell,
   TableHeader,
   TableRow,
-} from "../../ui/table"; // Pastikan path ini benar
-import Badge from "../../ui/badge/Badge"; // Pastikan path ini benar
-// import { useNavigate } from "react-router-dom"; // Uncomment jika Anda menggunakan React Router untuk navigasi edit
+} from "../../ui/table";
+import Badge from "../../ui/badge/Badge";
+import { useNavigate } from "react-router-dom";
 
-interface Product {
-  id: number;
-  imageUrl: string;
-  name: string;
-  description: string;
-  stock: number;
-  price: number;
-  categoryId: number; // Tambahkan categoryId jika diperlukan untuk Edit
-  categoryName: string;
-}
+import { Product } from "../../../models/product.model";
 
 type BadgeColor =
   | "primary"
@@ -49,7 +40,7 @@ export default function ProductTable() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // const navigate = useNavigate(); // Uncomment jika Anda menggunakan React Router
+  const navigate = useNavigate();
 
   const fetchProducts = () => {
     setLoading(true);
@@ -81,17 +72,7 @@ export default function ProductTable() {
   }, []);
 
   const handleEditProduct = (productId: number) => {
-    console.log("Edit product with ID:", productId);
-    // Di sini Anda akan menangani navigasi ke halaman edit atau membuka modal.
-    // Contoh dengan React Router:
-    // navigate(`/admin/products/edit/${productId}`);
-
-    // Untuk implementasi penuh:
-    // 1. Buat route baru untuk halaman edit produk (misalnya /edit-product/:id).
-    // 2. Buat komponen FormProduct bisa menerima ID produk.
-    // 3. Jika ada ID, FormProduct fetch data produk tersebut dan mengisi form.
-    // 4. Tombol submit di FormProduct akan memanggil API update.
-    alert(`Edit action for product ID: ${productId}. Implement navigation/modal for editing.`);
+    navigate(`/products/edit/${productId}`);
   };
 
   const handleDeleteProduct = async (productId: number) => {
