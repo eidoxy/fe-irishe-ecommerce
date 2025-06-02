@@ -3,7 +3,7 @@ export interface FormValidation {
   errors: string[];
 }
 
-// Product From Data Interface
+// Product Form Data Interface
 export interface ProductFormData {
   categoryId: number;
   name: string;
