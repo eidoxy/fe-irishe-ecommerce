@@ -1,19 +1,36 @@
-import React, { useCallback } from "react";
-import { useDropzone } from "react-dropzone"; // Import FileWithPath jika diperlukan untuk akses path
-import ComponentCard from "../../common/ComponentCard"; // Pastikan path ini benar
+import React, { useCallback, useEffect } from "react";
+import { useDropzone } from "react-dropzone";
+import ComponentCard from "../../common/ComponentCard";
 
 interface DropzoneComponentProps {
-  onFileSelect: (file: File | null) => void; // Callback untuk mengirim File object ke parent
-  selectedFile: File | null; // Untuk menampilkan nama file yang dipilih (opsional)
+  onFileSelect: (file: File | null) => void;
+  selectedFile: File | null;
 }
 
 const DropzoneComponent: React.FC<DropzoneComponentProps> = ({ onFileSelect, selectedFile }) => {
+  const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
+  
+  // Create preview URL when file changes
+  useEffect(() => {
+    if (selectedFile) {
+      const url = URL.createObjectURL(selectedFile);
+      setPreviewUrl(url);
+
+      return () => {
+        URL.revokeObjectURL(url);
+      };
+    } else {
+      setPreviewUrl(null);
+    }
+  }, [selectedFile]);
+  
+  
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       if (acceptedFiles.length > 0) {
-        onFileSelect(acceptedFiles[0]); // Kirim file pertama yang diterima
+        onFileSelect(acceptedFiles[0]);
       } else {
-        onFileSelect(null); // Atau kirim null jika tidak ada file
+        onFileSelect(null);
       }
     },
     [onFileSelect]
@@ -27,8 +44,13 @@ const DropzoneComponent: React.FC<DropzoneComponentProps> = ({ onFileSelect, sel
       "image/webp": [".webp"],
       "image/svg+xml": [".svg"],
     },
-    multiple: false, // Hanya izinkan satu file
+    multiple: false,
   });
+
+  const handleRemoveImage = () => {
+    onFileSelect(null);
+    setPreviewUrl(null);
+  };
 
   return (
     <ComponentCard title="Product Image">
@@ -42,37 +64,71 @@ const DropzoneComponent: React.FC<DropzoneComponentProps> = ({ onFileSelect, sel
         }`}
       >
         <input {...getInputProps()} />
-        <div className="dz-message flex flex-col items-center m-0!">
-          <div className="mb-[22px] flex justify-center">
-            <div className="flex h-[68px] w-[68px] items-center justify-center rounded-full bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-400">
-              <svg /* ... ikon SVG Anda ... */ ></svg>
+
+        {/* Preview the image if already upload the image */}
+        
+        {previewUrl ? (
+          <div className="flex flex-col items-center">
+            <div className="mb-4 relative">
+              <img
+                src={previewUrl}
+                alt="Preview"
+                className="max-w-full max-h-48 rounded-lg object-contain border border-gray-200 dark:border-gray-600"
+              />
             </div>
+            <p className="text-gray-800 dark:text-white/90 text-sm font-medium mb-2">
+              Selected: {selectedFile?.name}
+            </p>
+            <p className="text-gray-500 dark:text-gray-400 text-xs">
+              Click to change image or drag a new one here
+            </p>
           </div>
-          {selectedFile ? (
-            <p className="text-gray-800 dark:text-white/90">File terpilih: {selectedFile.name}</p>
-          ) : (
-            <>
-              <h4 className="mb-3 font-semibold text-gray-800 text-theme-xl dark:text-white/90">
-                {isDragActive ? "Letakkan file di sini..." : "Seret & Lepas file di sini"}
-              </h4>
-              <span className="text-center mb-5 block w-full max-w-[290px] text-sm text-gray-700 dark:text-gray-400">
-                Seret dan lepas gambar PNG, JPG, WebP, SVG Anda di sini atau klik untuk mencari
-              </span>
-              <span className="font-medium underline text-theme-sm text-brand-500">
-                Cari File
-              </span>
-            </>
-          )}
-        </div>
+        ) : (
+          /* Show upload UI if no image */
+          <div className="dz-message flex flex-col items-center m-0!">
+            <div className="mb-[22px] flex justify-center">
+              <div className="flex h-[68px] w-[68px] items-center justify-center rounded-full bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-400">
+                <svg
+                  className="fill-current"
+                  width="29"
+                  height="28"
+                  viewBox="0 0 29 28"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    fillRule="evenodd"
+                    clipRule="evenodd"
+                    d="M14.5019 3.91699C14.2852 3.91699 14.0899 4.00891 13.953 4.15589L8.57363 9.53186C8.28065 9.82466 8.2805 10.2995 8.5733 10.5925C8.8661 10.8855 9.34097 10.8857 9.63396 10.5929L13.7519 6.47752V18.667C13.7519 19.0812 14.0877 19.417 14.5019 19.417C14.9161 19.417 15.2519 19.0812 15.2519 18.667V6.48234L19.3653 10.5929C19.6583 10.8857 20.1332 10.8855 20.426 10.5925C20.7188 10.2995 20.7186 9.82463 20.4256 9.53184L15.0838 4.19378C14.9463 4.02488 14.7367 3.91699 14.5019 3.91699ZM5.91626 18.667C5.91626 18.2528 5.58047 17.917 5.16626 17.917C4.75205 17.917 4.41626 18.2528 4.41626 18.667V21.8337C4.41626 23.0763 5.42362 24.0837 6.66626 24.0837H22.3339C23.5766 24.0837 24.5839 23.0763 24.5839 21.8337V18.667C24.5839 18.2528 24.2482 17.917 23.8339 17.917C23.4197 17.917 23.0839 18.2528 23.0839 18.667V21.8337C23.0839 22.2479 22.7482 22.5837 22.3339 22.5837H6.66626C6.25205 22.5837 5.91626 22.2479 5.91626 21.8337V18.667Z"
+                  />
+                </svg>
+              </div>
+            </div>
+            <h4 className="mb-3 font-semibold text-gray-800 text-theme-xl dark:text-white/90">
+              {isDragActive ? "Drop Files Here" : "Drag & Drop Files Here"}
+            </h4>
+            <span className="text-center mb-5 block w-full max-w-[290px] text-sm text-gray-700 dark:text-gray-400">
+              Drag and drop your PNG, JPG, WebP, SVG images here or browse
+            </span>
+            <span className="font-medium underline text-theme-sm text-brand-500">
+              Browse File
+            </span>
+          </div>
+        )}
       </div>
+
       {selectedFile && (
-        <button
-          type="button"
-          onClick={() => onFileSelect(null)}
-          className="mt-2 px-3 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600"
-        >
-          Hapus Gambar
-        </button>
+        <div className="mt-3 flex justify-center">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleRemoveImage();
+            }}
+            className="px-4 py-2 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
+          >
+            Remove Image
+          </button>
+        </div>
       )}
     </ComponentCard>
   );

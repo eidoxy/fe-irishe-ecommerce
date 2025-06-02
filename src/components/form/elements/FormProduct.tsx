@@ -1,40 +1,49 @@
-import { useState, ChangeEvent, useEffect } from "react"; // Tambahkan useEffect
+import { useState, ChangeEvent, useEffect } from "react";
+import { useNavigate } from "react-router";
+import { toast } from "react-toastify";
+
 import ComponentCard from "../../common/ComponentCard.tsx";
 import Label from "../Label.tsx";
 import Input from "../input/InputField.tsx";
 import TextArea from "../input/TextArea.tsx";
 import Select from "../Select.tsx";
-import DropzoneComponent from "../input/DropZone.tsx"; // Pastikan ini adalah path ke DropzoneComponent yang benar
+import DropzoneComponent from "../input/DropZone.tsx";
 
-// Definisikan tipe untuk kategori dari API
-interface ApiCategory {
-  id: number;
-  name: string;
-  description?: string; // description opsional jika tidak selalu ada atau tidak digunakan
-}
+import {
+  CategoryResponse,
+  CategorySelectOption
+}  from "../../../models/category.model.ts";
 
-// Definisikan tipe untuk opsi Select
-interface SelectOption {
-  value: string;
-  label: string;
-}
+import {
+  ProductFormData,
+} from "../../../models/form.model.ts";
 
 export default function FormProduct() {
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [categoryId, setCategoryId] = useState<number | null>(null);
-  const [categoryName, setCategoryName] = useState("");
-  const [stock, setStock] = useState<number | string>("");
-  const [price, setPrice] = useState<number | string>("");
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const navigate = useNavigate();
+  
+  const [formData, setFormData] = useState<ProductFormData>({
+    categoryId: 0,
+    name: "",
+    description: null,
+    stock: "",
+    price: "",
+    imageFile: null,
+  });
 
-  // State untuk menyimpan opsi kategori dari API
-  const [categoryOptions, setCategoryOptions] = useState<SelectOption[]>([]);
-  // State untuk loading dan error saat fetch kategori
+  const [categoryOptions, setCategoryOptions] = useState<CategorySelectOption[]>([]);
   const [loadingCategories, setLoadingCategories] = useState<boolean>(true);
   const [categoryError, setCategoryError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  // useEffect untuk mengambil data kategori saat komponen pertama kali dimuat
+  const [errors, setErrors] = useState({
+    name: "",
+    description: "",
+    category: "",
+    stock: "",
+    price: "",
+    image: ""
+  });
+  
   useEffect(() => {
     const fetchCategories = async () => {
       setLoadingCategories(true);
@@ -44,14 +53,14 @@ export default function FormProduct() {
         if (!response.ok) {
           throw new Error(`Failed to fetch categories: ${response.statusText}`);
         }
-        const result: { data: ApiCategory[] } = await response.json();
-        
-        // Transformasi data API ke format yang dibutuhkan oleh komponen Select
-        const transformedOptions = result.data.map(category => ({
-          value: String(category.id), // id dari API (number) dijadikan string untuk value
-          label: category.name,       // name dari API untuk label
+
+        const result: CategoryResponse = await response.json();
+        const categoryData: CategorySelectOption[] = result.data.map(category => ({
+          value: String(category.id),
+          label: category.name,
         }));
-        setCategoryOptions(transformedOptions);
+
+        setCategoryOptions(categoryData);
       } catch (error) {
         console.error("Error fetching categories:", error);
         setCategoryError(error instanceof Error ? error.message : "An unknown error occurred");
@@ -61,94 +70,193 @@ export default function FormProduct() {
     };
 
     fetchCategories();
-  }, []); // Array dependency kosong agar useEffect hanya berjalan sekali saat mount
+  }, []);
 
-  const handleSelectChange = (value: string) => { // value adalah string ID kategori
-    // Cari opsi yang dipilih dari categoryOptions (data dari API)
-    const selectedOption = categoryOptions.find(option => option.value === value);
-    if (selectedOption) {
-      setCategoryId(Number(selectedOption.value)); // Konversi value (string ID) kembali ke number
-      setCategoryName(selectedOption.label);     // Ambil label sebagai categoryName
-    } else {
-      setCategoryId(null);
-      setCategoryName("");
+  // Form validation function
+  const validateForm = (): boolean => {
+    const newErrors = {
+      name: "",
+      description: "",
+      category: "",
+      stock: "",
+      price: "",
+      image: ""
+    };
+
+    let isValid = true;
+
+    // Validate each field
+    if (!formData.name.trim()) {
+      newErrors.name = "Product name is required";
+      isValid = false;
+    }
+
+    if (!formData.description?.trim()) {
+      newErrors.description = "Description is required";
+      isValid = false;
+    }
+
+    if (!formData.categoryId || formData.categoryId === 0) {
+      newErrors.category = "Please select a category";
+      isValid = false;
+    }
+
+    if (!formData.stock || Number(formData.stock) < 0) {
+      newErrors.stock = "Valid stock number is required";
+      isValid = false;
+    }
+
+    if (!formData.price || Number(formData.price) <= 0) {
+      newErrors.price = "Valid price is required";
+      isValid = false;
+    }
+
+    if (!formData.imageFile) {
+      newErrors.image = "Product image is required";
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  // Clear specific field error when user types
+  const clearError = (field: string) => {
+    if (errors[field as keyof typeof errors]) {
+      setErrors(prev => ({ ...prev, [field]: "" }));
     }
   };
 
-  const handleFileSelect = (file: File | null) => {
-    setImageFile(file);
+  // FormData for API submission
+  const createApiFormData = (): FormData => {
+    const apiFormData = new FormData();
+    apiFormData.append("name", formData.name.trim());
+    apiFormData.append("description", formData.description?.trim() || "");
+    apiFormData.append("categoryId", String(formData.categoryId));
+    apiFormData.append("stock", String(formData.stock));
+    apiFormData.append("price", String(formData.price));
+    if (formData.imageFile) {
+      apiFormData.append("image", formData.imageFile);
+    }
+
+    return apiFormData;
   };
 
-  const handleNumericInputChange = (setter: React.Dispatch<React.SetStateAction<string | number>>) => (e: ChangeEvent<HTMLInputElement>) => {
-    setter(e.target.value);
+  // Reset form function to initial state
+  const resetForm = (): void => {
+    setFormData({
+      categoryId: 0,
+      name: "",
+      description: null,
+      stock: "",
+      price: "",
+      imageFile: null,
+    });
+    setErrors({
+      name: "",
+      description: "",
+      category: "",
+      stock: "",
+      price: "",
+      image: ""
+    });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Update form data helper function
+  const updateFormData = (updates: Partial<ProductFormData>): void => {
+    setFormData(prev => ({ ...prev, ...updates }));
+  };
+
+  // Event handlers
+  const handleSelectChange = (value: string): void => {
+    const selectedOption = categoryOptions.find(option => option.value === value);
+    updateFormData({
+      categoryId: selectedOption ? Number(selectedOption.value) : 0
+    });
+    clearError('category');
+  };
+
+  const handleFileSelect = (file: File | null): void => {
+    updateFormData({ imageFile: file });
+    clearError('image');
+  };
+
+  const handleInputChange = (field: keyof ProductFormData) => (
+    e: ChangeEvent<HTMLInputElement>
+  ): void => {
+    let value: string | number = e.target.value;
+
+    if (field === 'stock' || field === 'price') {
+      value = e.target.value;
+    }
+
+    updateFormData({ [field]: value });
+    clearError(field);
+  };
+
+  const handleTextAreaChange = (value: string): void => {
+    updateFormData({ description: value });
+    clearError('description');
+  };
+
+  // Function handle form submission
+  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
 
-    if (!imageFile) {
-      alert("Please upload an image for the product.");
-      return;
-    }
-    // Pastikan categoryId tidak null (kategori sudah dipilih)
-    if (!name || !description || categoryId === null || price === "" || stock === "") {
-      alert("Please fill in all required fields, including category.");
+    // Validate form before submission
+    if (!validateForm()) {
       return;
     }
 
-    const finalStock = Number(stock);
-    const finalPrice = Number(price);
-
-    if (isNaN(finalStock) || finalStock < 0) {
-        alert("Stock must be a valid non-negative number.");
-        return;
-    }
-    if (isNaN(finalPrice) || finalPrice <= 0) {
-        alert("Price must be a valid positive number.");
-        return;
-    }
-
-    const formData = new FormData();
-    formData.append("name", name);
-    formData.append("description", description);
-    // categoryId sudah number, jadi kita kirim sebagai string
-    formData.append("categoryId", String(categoryId));
-    // Kirim categoryName jika backend Anda membutuhkannya (opsional)
-    // Jika backend hanya butuh categoryId, Anda bisa hapus baris append categoryName
-    if (categoryName) {
-        formData.append("categoryName", categoryName);
-    }
-    formData.append("stock", String(finalStock));
-    formData.append("price", String(finalPrice));
-    formData.append("image", imageFile);
-
-    console.log("Submitting FormData:", Object.fromEntries(formData.entries()));
-
+    setIsSubmitting(true);
+    
     try {
+      const apiFormData = createApiFormData();
+      console.log("Submitting FormData:", Object.fromEntries(apiFormData.entries()));
+
       const response = await fetch("http://47.128.233.82:3000/api/products/create", {
         method: "POST",
-        body: formData,
+        body: apiFormData,
       });
 
-      if (response.ok) {
-        const result = await response.json();
-        console.log("Product created:", result);
-        alert("Product created successfully!");
-        setName("");
-        setDescription("");
-        setCategoryId(null);
-        setCategoryName("");
-        setStock("");
-        setPrice("");
-        setImageFile(null);
-      } else {
-        const errorData = await response.json().catch(() => ({ message: "Failed to parse error response from server." }));
-        console.error("Failed to create product. Status:", response.status, "Data:", errorData);
-        alert(`Failed to create product: ${errorData.message || errorData.error || response.statusText}`);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ 
+          message: "Failed to parse error response from server." 
+        }));
+        throw new Error(errorData.message || errorData.error || response.statusText);
       }
+
+      const result = await response.json();
+      console.log("Product created:", result);
+
+      toast.success(`🎉 Product "${formData.name}" created successfully!`, {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: false,
+      });
+      
+      resetForm();
+
+      setTimeout(() => {
+        navigate('/products');
+      }, 1500);
     } catch (error) {
       console.error("Error submitting form:", error);
-      alert(`An error occurred while creating product: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+
+      toast.error(`❌ Failed to create product: ${errorMessage}`, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: false,
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -156,42 +264,86 @@ export default function FormProduct() {
     <ComponentCard title="Create Product">
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <DropzoneComponent onFileSelect={handleFileSelect} selectedFile={imageFile} />
+          <DropzoneComponent onFileSelect={handleFileSelect} selectedFile={formData.imageFile} />
+          {errors.image && <p className="mt-1 text-sm text-red-600">{errors.image}</p>}
         </div>
         <div>
           <Label htmlFor="name">Name</Label>
-          <Input type="text" id="name" value={name} onChange={e => setName(e.target.value)}  />
+          <Input 
+            type="text" 
+            id="name" 
+            value={formData.name} 
+            onChange={handleInputChange('name')} 
+            placeholder="Your product name"
+            className={errors.name ? "border-red-500" : ""}
+          />
+          {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
         </div>
         <div>
           <Label htmlFor="description">Description</Label>
-          <TextArea value={description} onChange={value => setDescription(value)} rows={6} />
+          <TextArea 
+            value={formData.description || ""} 
+            onChange={handleTextAreaChange} 
+            rows={6}
+            className={errors.description ? "border-red-500" : ""}
+          />
+          {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description}</p>}
         </div>
         <div>
           <Label>Category</Label>
           {loadingCategories && <p>Loading categories...</p>}
           {categoryError && <p className="text-red-500">Error: {categoryError}</p>}
           {!loadingCategories && !categoryError && (
-            <Select
-              options={categoryOptions} // Gunakan state categoryOptions dari API
-              placeholder="Select an option"
-              onChange={handleSelectChange} // Fungsi ini sudah disesuaikan
-              // value={categoryId ? String(categoryId) : ""} 
-              className="dark:bg-dark-900"
-              // required
-              // disabled={categoryOptions.length === 0} // Disable jika tidak ada opsi (misal API gagal & tidak ada cache)
-            />
+            <>
+              <Select
+                options={categoryOptions}
+                placeholder="Select an option"
+                onChange={handleSelectChange}
+                value={formData.categoryId ? String(formData.categoryId) : ""}
+                className={`dark:bg-dark-900 ${errors.category ? "border-red-500" : ""}`}
+              />
+              {errors.category && <p className="mt-1 text-sm text-red-600">{errors.category}</p>}
+            </>
           )}
         </div>
         <div>
           <Label htmlFor="stock">Stock</Label>
-          <Input type="number" id="stock" value={stock} onChange={handleNumericInputChange(setStock)} min="0"  />
+          <Input 
+            type="number" 
+            id="stock" 
+            value={formData.stock} 
+            onChange={handleInputChange('stock')} 
+            min="0" 
+            placeholder="0"
+            className={errors.stock ? "border-red-500" : ""}
+          />
+          {errors.stock && <p className="mt-1 text-sm text-red-600">{errors.stock}</p>}
         </div>
         <div>
           <Label htmlFor="price">Price</Label>
-          <Input type="number" id="price" value={price} onChange={handleNumericInputChange(setPrice)} min="0.01" step={0.01} />
+          <Input 
+            type="number" 
+            id="price" 
+            value={formData.price} 
+            onChange={handleInputChange('price')} 
+            min="0.01" 
+            step={0.01} 
+            placeholder="0"
+            className={errors.price ? "border-red-500" : ""}
+          />
+          {errors.price && <p className="mt-1 text-sm text-red-600">{errors.price}</p>}
         </div>
-        <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-          Create Product
+
+        <button 
+          type="submit" 
+          disabled={isSubmitting}
+          className={`px-4 py-2 text-white rounded font-medium transition-all duration-200 ${
+            isSubmitting 
+              ? 'bg-gray-400 cursor-not-allowed' 
+              : 'bg-blue-500 hover:bg-blue-600 hover:shadow-lg'
+          }`}
+        >
+          {isSubmitting ? 'Creating...' : 'Create Product'}
         </button>
       </form>
     </ComponentCard>
