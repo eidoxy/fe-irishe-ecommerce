@@ -135,9 +135,9 @@ export default function BestSellingProducts() {
                     <h2 className="text-2xl font-semibold text-gray-800">Best Selling Products</h2>
 
                     {/* View All Button */}
-                    <button className="bg-blue-500 hover:bg-blue-500 text-white px-4 py-2 rounded text-sm font-medium transition-colors duration-200">
+                    {/* <button className="bg-blue-500 hover:bg-blue-500 text-white px-4 py-2 rounded text-sm font-medium transition-colors duration-200">
                         View All
-                    </button>
+                    </button> */}
                 </div>
             </div>
 
