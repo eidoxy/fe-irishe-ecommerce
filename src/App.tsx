@@ -15,7 +15,7 @@ import EditProduct from "./pages/Admin/Products/EditProduct";
 
 import Categories from "./pages/Admin/Categories/Index";
 import HomeProduct from "./pages/User/Home";
-import AllFlashSalesPage from "./pages/User/AllflashSalesPage"; 
+import Catalog from "./pages/User/Catalog"; 
 import "./assets/toasty.css"
 
 export default function App() {
@@ -36,31 +36,27 @@ export default function App() {
         />
         <ScrollToTop />
         <Routes>
+          {/* Home Page */}
+          <Route index path="/" element={<HomeProduct />} />
+          <Route path="/catalog" element={<Catalog />} />
+
           {/* Dashboard Layout */}
-          <Route element={<AppLayout />}>
-            <Route index path="/" element={<Home />} />
-            <Route path="/dashboard" element={<Home />} />
+          <Route path="/admin" element={<AppLayout />}>
+            <Route index element={<Home/>} />
+            <Route path="dashboard" element={<Home />} />
 
             {/* Products */}
-            <Route path="/products" element={<Products />} />
-            <Route path="/products/add" element={<AddProduct />} />
-            <Route path="/products/edit/:id" element={<EditProduct />} />
-
-            {/* Flash Sales */}
+            <Route path="products" element={<Products />} />
+            <Route path="products/add" element={<AddProduct />} />
+            <Route path="products/edit/:id" element={<EditProduct />} />
 
             {/* Categories */}
-            <Route path="/categories" element={<Categories />} />
+            <Route path="categories" element={<Categories />} />
 
 
             {/* Others Page */}
-            <Route path="/profile" element={<UserProfiles />} />
+            <Route path="profile" element={<UserProfiles />} />
           </Route>
-
-          {/* Users */}
-          <Route path="/users" element={<HomeProduct />} />
-
-           {/* Halaman "View All" untuk Flash Sales */}
-          <Route path="/users/flash-sales" element={<AllFlashSalesPage />} /> {/* <-- Tambahkan route ini */}
 
           {/* Auth Layout */}
           <Route path="/signin" element={<SignIn />} />

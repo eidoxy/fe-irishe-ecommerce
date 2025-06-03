@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Swal from "sweetalert2";
 import {
   Table,
   TableBody,
@@ -76,31 +77,95 @@ export default function ProductTable() {
   };
 
   const handleDeleteProduct = async (productId: number) => {
-    if (window.confirm(`Are you sure you want to delete product ID: ${productId}?`)) {
-      try {
-        const response = await fetch(
-          `http://47.128.233.82:3000/api/products/delete/${productId}`,
-          {
-            method: "DELETE",
-          }
-        );
+    const product = products.find(p => p.id === productId);
+    const productName = product ? product.name : `Product ID: ${productId}`;
 
-        if (response.ok) {
-          // Hapus produk dari state untuk update UI secara instan
-          setProducts((prevProducts) =>
-            prevProducts.filter((product) => product.id !== productId)
+    const isDark = localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      html: `You are about to delete <strong>"${productName}"</strong>.<br/>This action cannot be undone!`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true,
+      focusCancel: true,
+      buttonsStyling: false,
+      background: isDark ? '#1f2937' : '#ffffff',
+      color: isDark ? '#f3f4f6' : '#1f2937',
+      customClass: {
+        popup: `rounded-xl shadow-2xl border-0 ${isDark ? 'bg-gray-800' : 'bg-white'}`,
+        title: `text-xl font-bold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`,
+        htmlContainer: `text-base leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-600'}`,
+        confirmButton: 'bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 ease-in-out focus:outline-none focus:ring-4 focus:ring-red-500/50 transform hover:scale-105 shadow-lg hover:shadow-xl mr-3',
+        cancelButton: `${isDark ? 'bg-gray-600 hover:bg-gray-700' : 'bg-gray-500 hover:bg-gray-600'} text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 ease-in-out focus:outline-none focus:ring-4 focus:ring-gray-500/50 transform hover:scale-105 shadow-lg hover:shadow-xl`,
+        actions: 'gap-4 mt-8',
+        icon: 'border-orange-200 text-orange-600 scale-110'
+      },
+      showLoaderOnConfirm: true,
+      preConfirm: async () => {
+        try {
+          const response = await fetch(
+            `http://47.128.233.82:3000/api/products/delete/${productId}`,
+            {
+              method: "DELETE",
+            }
           );
-          alert("Product deleted successfully!");
-        } else {
-          // Tangani error dari API
-          const errorData = await response.json().catch(() => null); // Coba parse error JSON
-          console.error("Failed to delete product:", response.status, errorData);
-          alert(`Failed to delete product: ${errorData?.message || response.statusText}`);
+
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => null);
+            throw new Error(errorData?.message || response.statusText);
+          }
+
+          return response.json();
+        } catch (error) {
+          Swal.showValidationMessage(
+            `<div class="text-red-500 text-sm font-semibold bg-red-50 p-3 rounded-lg border border-red-200">
+              <svg class="w-5 h-5 inline-block mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+              </svg>
+              Request failed: ${error instanceof Error ? error.message : "Unknown error"}
+            </div>`
+          );
         }
-      } catch (error) {
-        console.error("Error deleting product:", error);
-        alert(`An error occurred while deleting the product: ${error instanceof Error ? error.message : "Unknown error"}`);
-      }
+      },
+      allowOutsideClick: () => !Swal.isLoading()
+    });
+
+    if (result.isConfirmed) {
+      setProducts((prevProducts) =>
+        prevProducts.filter((product) => product.id !== productId)
+      );
+
+      await Swal.fire({
+        title: 'Deleted!',
+        html: `<div class="text-center">
+          <div class="mb-4">
+            <svg class="w-16 h-16 mx-auto text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+          </div>
+          <p><strong>"${productName}"</strong> has been deleted successfully.</p>
+        </div>`,
+        icon: 'success',
+        confirmButtonText: 'OK',
+        timer: 3000,
+        timerProgressBar: true,
+        buttonsStyling: false,
+        background: isDark ? '#1f2937' : '#ffffff',
+        color: isDark ? '#f3f4f6' : '#1f2937',
+        customClass: {
+          popup: `rounded-xl shadow-2xl border-0 ${isDark ? 'bg-gray-800' : 'bg-white'}`,
+          title: `text-xl font-bold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`,
+          htmlContainer: `text-base ${isDark ? 'text-gray-300' : 'text-gray-600'}`,
+          confirmButton: 'bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-semibold py-3 px-8 rounded-lg transition-all duration-200 ease-in-out focus:outline-none focus:ring-4 focus:ring-green-500/50 transform hover:scale-105 shadow-lg hover:shadow-xl',
+          timerProgressBar: 'bg-gradient-to-r from-green-500 to-green-600 h-1',
+          icon: 'border-green-200 text-green-600 scale-110'
+        }
+      });
     }
   };
 

@@ -1,4 +1,4 @@
-// src/pages/User/AllFlashSalesPage.tsx
+// src/pages/User/Catalog.tsx
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Header from "../../layout/UserHeader";
@@ -7,7 +7,7 @@ import CardProduct from "../../components/common/CardProduct";
 import { Product } from "../../models/product.model";
 import { Link } from "react-router-dom";
 
-export default function AllFlashSalesPage() {
+export default function Catalog() {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);

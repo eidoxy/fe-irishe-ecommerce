@@ -13,11 +13,24 @@ export interface ProductFormData {
   imageFile: File | null;
 }
 
+export interface CategoryFormData {
+  name: string;
+  description?: string | null;
+}
+
 // Product From State Interface
 export interface ProductFormState extends ProductFormData {
   categoryOptions: CategorySelectOption[];
   loadingCategories: boolean;
   categoryError: string | null;
+}
+
+export interface CategoryFormState extends CategoryFormData {
+  isLoading: boolean;
+  errors: {
+    name: string;
+    description: string;
+  }
 }
 
 import { CategorySelectOption } from "./category.model";
