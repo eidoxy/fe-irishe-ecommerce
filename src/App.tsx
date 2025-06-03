@@ -2,11 +2,12 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import SignIn from "./pages/Auth/SignIn";
-import SignUp from "./pages/Auth/SignUp";
+// import SignUp from "./pages/Auth/SignUp";
 import NotFound from "./pages/NotFound";
 import UserProfiles from "./pages/UserProfiles";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
+import ProtectedRoute from "./utils/protectedRoutes";
 
 import Home from "./pages/Admin/Dashboard/Index";
 import Products from "./pages/Admin/Products/Index";
@@ -41,7 +42,14 @@ export default function App() {
           <Route path="/catalog" element={<Catalog />} />
 
           {/* Dashboard Layout */}
-          <Route path="/admin" element={<AppLayout />}>
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <AppLayout />
+              </ProtectedRoute>
+            }
+          >
             <Route index element={<Home/>} />
             <Route path="dashboard" element={<Home />} />
 
@@ -53,14 +61,13 @@ export default function App() {
             {/* Categories */}
             <Route path="categories" element={<Categories />} />
 
-
             {/* Others Page */}
             <Route path="profile" element={<UserProfiles />} />
           </Route>
 
           {/* Auth Layout */}
           <Route path="/signin" element={<SignIn />} />
-          <Route path="/signup" element={<SignUp />} />
+          {/* <Route path="/signup" element={<SignUp />} /> */}
 
           {/* Fallback Route */}
           <Route path="*" element={<NotFound />} />

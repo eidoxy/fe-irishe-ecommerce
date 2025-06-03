@@ -1,11 +1,21 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { Dropdown } from "../ui/dropdown/Dropdown";
-import { Link } from "react-router";
+import { useNavigate } from "react-router";
+import { toast } from "react-toastify";
+import { AuthService, type AdminUser } from "../../utils/authService";
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
+  const [adminUser, setAdminUser] = useState<AdminUser | null>(null);
+  const navigate = useNavigate();
 
+  // Load admin user data on component mount
+  useEffect(() => {
+    const userData = AuthService.getUser();
+    setAdminUser(userData);
+  }, []);
+  
   function toggleDropdown() {
     setIsOpen(!isOpen);
   }
@@ -13,6 +23,43 @@ export default function UserDropdown() {
   function closeDropdown() {
     setIsOpen(false);
   }
+
+  const handleLogout = () => {
+    try {
+      // Clear all stored data
+      AuthService.logout();
+      
+      // Close dropdown
+      closeDropdown();
+      
+      // Show success message
+      toast.success("👋 Logged out successfully!", {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: false,
+      });
+
+      // Redirect to signin page
+      setTimeout(() => {
+        navigate("/signin");
+      }, 1000);
+
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast.error("Error during logout. Please try again.", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: false,
+      });
+    }
+  };
+  
   return (
     <div className="relative">
       <button
@@ -23,7 +70,9 @@ export default function UserDropdown() {
           <img src="/images/user/owner.jpg" alt="User" />
         </span>
 
-        <span className="block mr-1 font-medium text-theme-sm">Eido</span>
+        <span className="block mr-1 font-medium text-theme-sm">
+          {adminUser?.name || "Loading..."}
+        </span>
         <svg
           className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""
@@ -51,10 +100,10 @@ export default function UserDropdown() {
       >
         <div>
           <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
-            Eidoxy
+          {adminUser?.name || "Loading..."}
           </span>
           <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-            eidoxy@irishe.com
+          {adminUser?.email || "Loading"}
           </span>
         </div>
 
@@ -135,12 +184,12 @@ export default function UserDropdown() {
             </DropdownItem>
           </li>
         </ul>
-        <Link
-          to="/signin"
-          className="flex items-center gap-3 px-3 py-2 mt-3 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-3 px-3 py-2 mt-3 font-medium text-red-600 rounded-lg group text-theme-sm hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300 transition-colors"
         >
           <svg
-            className="fill-gray-500 group-hover:fill-gray-700 dark:group-hover:fill-gray-300"
+            className="fill-red-600 group-hover:fill-red-700 dark:fill-red-400 dark:group-hover:fill-red-300"
             width="24"
             height="24"
             viewBox="0 0 24 24"
@@ -155,7 +204,7 @@ export default function UserDropdown() {
             />
           </svg>
           Sign out
-        </Link>
+        </button>
       </Dropdown>
     </div>
   );
