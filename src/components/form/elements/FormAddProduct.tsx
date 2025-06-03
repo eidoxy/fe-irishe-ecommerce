@@ -18,6 +18,8 @@ import {
   ProductFormData,
 } from "../../../models/form.model.ts";
 
+import { AuthService } from "../../../utils/authService.ts";
+
 export default function FormAddProduct() {
   const navigate = useNavigate();
   
@@ -49,7 +51,7 @@ export default function FormAddProduct() {
       setLoadingCategories(true);
       setCategoryError(null);
       try {
-        const response = await fetch("http://47.128.233.82:3000/api/categories");
+        const response = await AuthService.authenticatedFetch("https://be-irishe.seido.my.id/api/categories");
         if (!response.ok) {
           throw new Error(`Failed to fetch categories: ${response.statusText}`);
         }
@@ -64,13 +66,30 @@ export default function FormAddProduct() {
       } catch (error) {
         console.error("Error fetching categories:", error);
         setCategoryError(error instanceof Error ? error.message : "An unknown error occurred");
+
+        if (error instanceof Error && error.message.includes('401')) {
+          toast.error("Session expired. Please sign in again.", {
+            position: "top-right",
+            autoClose: 3000,
+          });
+          navigate('/signin');
+        }
       } finally {
         setLoadingCategories(false);
       }
     };
 
+    if (!AuthService.isAuthenticated()) {
+      toast.error("Please sign in to access this page.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      navigate('/signin');
+      return;
+    }
+    
     fetchCategories();
-  }, []);
+  }, [navigate]);
 
   // Form validation function
   const validateForm = (): boolean => {
@@ -203,6 +222,16 @@ export default function FormAddProduct() {
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
 
+    // Check authentication before submission
+    if (!AuthService.isAuthenticated()) {
+      toast.error("Session expired. Please sign in again.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      navigate('/signin');
+      return;
+    }
+    
     // Validate form before submission
     if (!validateForm()) {
       return;
@@ -212,12 +241,39 @@ export default function FormAddProduct() {
     
     try {
       const apiFormData = createApiFormData();
-      console.log("Submitting FormData:", Object.fromEntries(apiFormData.entries()));
 
-      const response = await fetch("http://47.128.233.82:3000/api/products/create", {
+      // Get authentication headers
+      const token = AuthService.getToken();
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+
+      const response = await fetch("https://be-irishe.seido.my.id/api/products/create", {
         method: "POST",
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
         body: apiFormData,
       });
+
+      // Handle authentication errors
+      if (response.status === 401) {
+        AuthService.logout(); // Clear invalid token
+        toast.error("Session expired. Please sign in again.", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+        navigate('/signin');
+        return;
+      }
+
+      if (response.status === 403) {
+        toast.error("You don't have permission to create products.", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+        return;
+      }
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ 
@@ -241,20 +297,30 @@ export default function FormAddProduct() {
       resetForm();
 
       setTimeout(() => {
-        navigate('/products');
+        navigate('/admin/products');
       }, 1500);
     } catch (error) {
       console.error("Error submitting form:", error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
 
-      toast.error(`❌ Failed to create product: ${errorMessage}`, {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: false,
-      });
+      // Handle specific error cases
+      if (errorMessage.includes('401') || errorMessage.includes('unauthorized')) {
+        AuthService.logout();
+        toast.error("Session expired. Please sign in again.", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+        navigate('/signin');
+      } else {
+        toast.error(`❌ Failed to create product: ${errorMessage}`, {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: false,
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }

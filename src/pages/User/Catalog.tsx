@@ -17,7 +17,7 @@ export default function Catalog() {
             setLoading(true);
             setError(null);
             try {
-                const response = await axios.get('http://47.128.233.82:3000/api/products');
+                const response = await axios.get('https://be-irishe.seido.my.id/api/products');
                 if (Array.isArray(response.data)) {
                     setProducts(response.data);
                 } else if (response.data && Array.isArray(response.data.data)) {

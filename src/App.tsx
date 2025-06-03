@@ -7,7 +7,7 @@ import NotFound from "./pages/NotFound";
 import UserProfiles from "./pages/UserProfiles";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
-import ProtectedRoute from "./utils/protectedRoutes";
+import ProtectedRoute from "./context/ProtectedRoutes";
 
 import Home from "./pages/Admin/Dashboard/Index";
 import Products from "./pages/Admin/Products/Index";
@@ -22,7 +22,7 @@ import "./assets/toasty.css"
 export default function App() {
   return (
     <>
-      <Router>
+      <Router basename="/">
         <ToastContainer
           position="top-right"
           autoClose={5000}

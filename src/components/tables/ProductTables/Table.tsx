@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 import {
   Table,
@@ -8,9 +10,10 @@ import {
   TableRow,
 } from "../../ui/table";
 import Badge from "../../ui/badge/Badge";
-import { useNavigate } from "react-router-dom";
 
 import { Product } from "../../../models/product.model";
+
+import { AuthService } from "../../../utils/authService";
 
 type BadgeColor =
   | "primary"
@@ -35,35 +38,57 @@ const getRandomColor = (): BadgeColor => {
 };
 
 export default function ProductTable() {
+  const navigate = useNavigate();
+
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const navigate = useNavigate();
-
-  const fetchProducts = () => {
+  const fetchProducts = async () => {
+    // Check authentication before fetching
+    if (!AuthService.isAuthenticated()) {
+      toast.error("Please sign in to access this page.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      navigate('/signin');
+      return;
+    }
+    
     setLoading(true);
     setError(null);
-    fetch("http://47.128.233.82:3000/api/products")
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        if (data && Array.isArray(data.data)) { // Pastikan data.data adalah array
-          setProducts(data.data);
-        } else {
-          console.warn("Fetched data is not in the expected format:", data);
-          setProducts([]); // Atau tangani kasus data kosong/format salah
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching products:", error);
-        setError(error.message);
-      })
-      .finally(() => setLoading(false));
+
+    try {
+      // Use AuthService for authenticated API call
+      const response = await AuthService.authenticatedFetch("https://be-irishe.seido.my.id/api/products");
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch products: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      if (result && Array.isArray(result.data)) {
+        setProducts(result.data);
+      } else {
+        console.warn("Fetched data is not in the expected format:", result);
+        setProducts([]);
+      }
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      
+      // Handle authentication errors
+      if (error instanceof Error && error.message.includes('401')) {
+        toast.error("Session expired. Please sign in again.", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+        navigate('/signin');
+      } else {
+        setError(error instanceof Error ? error.message : "Failed to load data.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -71,10 +96,30 @@ export default function ProductTable() {
   }, []);
 
   const handleEditProduct = (productId: number) => {
+    // Check authentication before editing
+    if (!AuthService.isAuthenticated()) {
+      toast.error("Please sign in to edit products.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      navigate('/signin');
+      return;
+    }
+    
     navigate(`/admin/products/edit/${productId}`);
   };
 
   const handleDeleteProduct = async (productId: number) => {
+    // Check authentication before deleting
+    if (!AuthService.isAuthenticated()) {
+      toast.error("Please sign in to delete products.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      navigate('/signin');
+      return;
+    }
+    
     const product = products.find(p => p.id === productId);
     const productName = product ? product.name : `Product ID: ${productId}`;
 
@@ -106,28 +151,75 @@ export default function ProductTable() {
       showLoaderOnConfirm: true,
       preConfirm: async () => {
         try {
+          // Check authentication again before making the request
+          if (!AuthService.isAuthenticated()) {
+            throw new Error("Authentication required. Please sign in again.");
+          }
+
+          // Get authentication token
+          const token = AuthService.getToken();
+          if (!token) {
+            throw new Error("No authentication token found");
+          }
+
+          console.log(`Deleting product ${productId} with authentication`);
+
+          // Make authenticated delete request
           const response = await fetch(
-            `http://47.128.233.82:3000/api/products/delete/${productId}`,
+            `https://be-irishe.seido.my.id/api/products/delete/${productId}`,
             {
               method: "DELETE",
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
             }
           );
 
+          // Handle authentication errors
+          if (response.status === 401) {
+            AuthService.logout(); // Clear invalid token
+            throw new Error("Session expired. Please sign in again.");
+          }
+
+          if (response.status === 403) {
+            throw new Error("You don't have permission to delete this product.");
+          }
+
           if (!response.ok) {
-            const errorData = await response.json().catch(() => null);
-            throw new Error(errorData?.message || response.statusText);
+            const errorData = await response.json().catch(() => ({ 
+              message: "Failed to parse error response from server." 
+            }));
+            throw new Error(errorData?.message || errorData?.error || response.statusText);
           }
 
           return response.json();
         } catch (error) {
+          console.error("Error deleting product:", error);
+          const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+
+          // Handle authentication errors specifically
+          if (errorMessage.includes('401') || errorMessage.includes('unauthorized') || errorMessage.includes('Authentication required')) {
+            // Close the current Swal and redirect to signin
+            Swal.close();
+            toast.error("Session expired. Please sign in again.", {
+              position: "top-right",
+              autoClose: 3000,
+            });
+            navigate('/signin');
+            return false; // Prevent further execution
+          }
+
+          // Show error in SweetAlert
           Swal.showValidationMessage(
             `<div class="text-red-500 text-sm font-semibold bg-red-50 p-3 rounded-lg border border-red-200">
               <svg class="w-5 h-5 inline-block mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
               </svg>
-              Request failed: ${error instanceof Error ? error.message : "Unknown error"}
+              Request failed: ${errorMessage}
             </div>`
           );
+          return false; // Prevent the success callback
         }
       },
       allowOutsideClick: () => !Swal.isLoading()

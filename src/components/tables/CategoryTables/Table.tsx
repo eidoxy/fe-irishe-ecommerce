@@ -7,10 +7,13 @@ import {
 } from "../../ui/table";
 
 import Badge from "../../ui/badge/Badge";
-import axios from "axios";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
+import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 import ModalFormCategory from "../../form/elements/ModalFormCategory";
+
+import { AuthService } from "../../../utils/authService";
 
 interface Category {
   id: number;
@@ -41,6 +44,7 @@ const getRandomColor = (): BadgeColor => {
 };
 
 export default function CategoryTable() {
+  const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -51,21 +55,46 @@ export default function CategoryTable() {
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
   
   // Fetch categories function
-  const fetchCategories = () => {
+  const fetchCategories = async () => {
+    // Check authentication before fetching
+    if (!AuthService.isAuthenticated()) {
+      toast.error("Please sign in to access this page.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      navigate('/signin');
+      return;
+    }
+    
     setLoading(true);
     setError(null);
-    axios
-      .get("http://47.128.233.82:3000/api/categories")
-      .then((response) => {
-        setCategories(response.data.data);
-      })
-      .catch((error) => {
-        console.error("Failed to fetch categories:", error);
+
+    try {
+      // Use AuthService for authenticated API call
+      const response = await AuthService.authenticatedFetch("https://be-irishe.seido.my.id/api/categories");
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch categories: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      setCategories(result.data);
+    } catch (error) {
+      console.error("Failed to fetch categories:", error);
+      
+      // Handle authentication errors
+      if (error instanceof Error && error.message.includes('401')) {
+        toast.error("Session expired. Please sign in again.", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+        navigate('/signin');
+      } else {
         setError("Failed to load data.");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -74,6 +103,16 @@ export default function CategoryTable() {
 
   // Handle edit category
   const handleEditCategory = (category: Category) => {
+    // Check authentication before editing
+    if (!AuthService.isAuthenticated()) {
+      toast.error("Please sign in to edit categories.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      navigate('/signin');
+      return;
+    }
+    
     setSelectedCategory(category);
     setModalMode('edit');
     setIsModalOpen(true);
@@ -81,6 +120,16 @@ export default function CategoryTable() {
 
   // Handle delete category with SweetAlert
   const handleDeleteCategory = async (categoryId: number) => {
+    // Check authentication before deleting
+    if (!AuthService.isAuthenticated()) {
+      toast.error("Please sign in to delete categories.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      navigate('/signin');
+      return;
+    }
+    
     const category = categories.find(c => c.id === categoryId);
     const categoryName = category ? category.name : `Category ID: ${categoryId}`;
 
@@ -112,12 +161,40 @@ export default function CategoryTable() {
       showLoaderOnConfirm: true,
       preConfirm: async () => {
         try {
+          // Check authentication again before making the request
+          if (!AuthService.isAuthenticated()) {
+            throw new Error("Authentication required. Please sign in again.");
+          }
+          
+          // Get authentication token
+          const token = AuthService.getToken();
+          if (!token) {
+            throw new Error("No authentication token found");
+          }
+
+          console.log(`Deleting category ${categoryId} with authentication`);
+
+          // Make authenticated delete request
           const response = await fetch(
-            `http://47.128.233.82:3000/api/categories/delete/${categoryId}`,
+            `https://be-irishe.seido.my.id/api/categories/delete/${categoryId}`,
             {
               method: "DELETE",
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
             }
           );
+
+          // Handle authentication errors
+          if (response.status === 401) {
+            AuthService.logout(); // Clear invalid token
+            throw new Error("Session expired. Please sign in again.");
+          }
+
+          if (response.status === 403) {
+            throw new Error("You don't have permission to delete this category.");
+          }
 
           if (!response.ok) {
             const errorData = await response.json().catch(() => null);
@@ -126,6 +203,20 @@ export default function CategoryTable() {
 
           return response.json();
         } catch (error) {
+          console.error("Error deleting category:", error);
+          const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+
+          // Handle authentication errors specifically
+          if (errorMessage.includes('401') || errorMessage.includes('unauthorized') || errorMessage.includes('Authentication required')) {
+            Swal.close();
+            toast.error("Session expired. Please sign in again.", {
+              position: "top-right",
+              autoClose: 3000,
+            });
+            navigate('/signin');
+            return false;
+          }
+          
           Swal.showValidationMessage(
             `<div class="text-red-500 text-sm font-semibold bg-red-50 p-3 rounded-lg border border-red-200">
               <svg class="w-5 h-5 inline-block mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -134,6 +225,7 @@ export default function CategoryTable() {
               Request failed: ${error instanceof Error ? error.message : "Unknown error"}
             </div>`
           );
+          return false;
         }
       },
       allowOutsideClick: () => !Swal.isLoading()
