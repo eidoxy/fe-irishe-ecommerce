@@ -11,21 +11,21 @@ interface BannerDataProps {
 const bannerData: BannerDataProps[] = [
     {
         id: 1,
-        imageSrc: "/images/product/banner-01.png",
-        title: "iPhone 14 Series",
-        description: "Up to 10% off Voucher",
+        imageSrc: "/images/product/banner-01.jpg",
+        title: "",
+        description: "",
     },
     {
         id: 2,
-        imageSrc: "/images/product/banner-01.png",
-        title: "iPhone 13 Pro Max",
-        description: "Up to 20% off Voucher",
+        imageSrc: "/images/product/banner-01.jpg",
+        title: "",
+        description: "",
     },
     {
         id: 3,
-        imageSrc: "/images/product/banner-01.png",
-        title: "Smart Watch Deals",
-        description: "Up to 15% off Voucher",
+        imageSrc: "/images/product/banner-01.jpg",
+        title: "",
+        description: "",
     },
 ];
 
@@ -59,14 +59,14 @@ export default function BannerSlider() {
                                 console.error("❌ Gagal load gambar:", banner.imageSrc)
                             }
                         />
-                        <div className="absolute inset-0 flex flex-col justify-center items-start px-6 md:px-16 text-white ">
+                        <div className="absolute inset-0 flex flex-col justify-center items-start px-6 md:px-16 md:py-69 text-white ">
                             <p className="text-sm md:text-lg">{banner.title}</p>
                             <h2 className="text-2xl md:text-4xl font-bold mb-4">
                                 {banner.description}
                             </h2>
-                            <button className="px-5 py-2 bg-white text-black font-medium rounded hover:bg-gray-300 transition">
+                            {/* <button className="px-5 py-2 bg-blue-700 text-black font-medium rounded hover:bg-gray-300 transition">
                                 Detail →
-                            </button>
+                            </button> */}
                         </div>
                     </div>
                 ))}
@@ -75,13 +75,13 @@ export default function BannerSlider() {
            {/* Navigasi Arrow */}
             <button
                 onClick={prevSlide}
-                className="absolute top-1/2 left-4 transform -translate-y-1/2 p-2 bg-white text-black rounded-full hover:bg-gray-200 transition"
+                className="absolute top-1/2 left-4 transform -translate-y-1/2 p-2 bg-blue-300 text-black rounded-full hover:bg-blue-900 transition"
             >
                 <ChevronLeft size={20} />
             </button>
             <button
                 onClick={nextSlide}
-                className="absolute top-1/2 right-4 transform -translate-y-1/2 p-2 bg-white text-black rounded-full hover:bg-gray-200 transition"
+                className="absolute top-1/2 right-4 transform -translate-y-1/2 p-2 bg-blue-300 text-black rounded-full hover:bg-blue-900 transition"
             >
                 <ChevronRight size={20} />
             </button>

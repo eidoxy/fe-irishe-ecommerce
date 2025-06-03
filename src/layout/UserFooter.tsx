@@ -2,7 +2,7 @@ import { Instagram, Twitter, Linkedin, Github} from 'lucide-react';
 
 const Footer = () => {
   return (
-    <footer className="bg-black text-white py-10">
+    <footer id="about" style={{ backgroundColor: '#212529' }} className="bg-black text-white py-10">
       <div className="container mx-auto flex flex-wrap justify-between px-4 md:px-8 lg:px-20">
 
         {/* Exclusive Subscribe */}
@@ -10,7 +10,7 @@ const Footer = () => {
           <h3 className="text-xl font-bold mb-4">Irishe E-commerce</h3>
           <h4 className="text-base font-semibold mb-2">Subscribe</h4>
           <p className="text-sm mb-3">Contact us for any questions or inquiries.</p>
-          <div className="flex">
+          {/* <div className="flex">
             <input
               type="email"
               placeholder="Enter your email"
@@ -19,7 +19,7 @@ const Footer = () => {
             <button className="bg-blue-500 text-white px-2 py-2 rounded-r-lg">
               ➔
             </button>
-          </div>
+          </div> */}
         </div>
 
         {/* Support */}
