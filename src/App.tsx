@@ -36,9 +36,11 @@ export default function App() {
         />
         <ScrollToTop />
         <Routes>
+          {/* Home Page */}
+          <Route index path="/" element={<HomeProduct />} />
+
           {/* Dashboard Layout */}
           <Route element={<AppLayout />}>
-            <Route index path="/" element={<Home />} />
             <Route path="/dashboard" element={<Home />} />
 
             {/* Products */}
@@ -55,9 +57,6 @@ export default function App() {
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />
           </Route>
-
-          {/* Users */}
-          <Route path="/users" element={<HomeProduct />} />
 
            {/* Halaman "View All" untuk Flash Sales */}
           <Route path="/users/flash-sales" element={<AllFlashSalesPage />} /> {/* <-- Tambahkan route ini */}
