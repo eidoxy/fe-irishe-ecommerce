@@ -1,7 +1,7 @@
 export interface Category {
   id: number;
   name: string;
-  description?: string;
+  description?: string | null;
 }
 
 export interface CategoryResponse {
