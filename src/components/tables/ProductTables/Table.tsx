@@ -19,7 +19,6 @@ type BadgeColor =
   | "warning"
   | "info"
   | "light"
-  | "dark";
 
 const badgeColors: BadgeColor[] = [
   "primary",
@@ -28,7 +27,6 @@ const badgeColors: BadgeColor[] = [
   "warning",
   "info",
   "light",
-  "dark",
 ];
 
 const getRandomColor = (): BadgeColor => {
@@ -73,7 +71,7 @@ export default function ProductTable() {
   }, []);
 
   const handleEditProduct = (productId: number) => {
-    navigate(`/products/edit/${productId}`);
+    navigate(`/admin/products/edit/${productId}`);
   };
 
   const handleDeleteProduct = async (productId: number) => {

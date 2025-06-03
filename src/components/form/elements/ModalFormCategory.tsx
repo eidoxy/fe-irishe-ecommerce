@@ -206,15 +206,16 @@ export default function ModalFormCategory({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center">
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+        className="fixed inset-0 bg-black/50 transition-opacity"
         onClick={onClose}
+        aria-hidden="true"
       />
       
       {/* Modal */}
-      <div className="relative z-51 w-full max-w-md mx-4">
+      <div className="relative z-[10000] w-full max-w-md mx-4">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl transform transition-all">
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
