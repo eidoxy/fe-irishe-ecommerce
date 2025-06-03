@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import CardProduct from "./CardProduct"; // Sesuaikan path jika perlu
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import axios from "axios";
-import { Product } from "../../types/Product";
+import { Product } from "../../models/product.model";
 import { Link } from "react-router-dom"; // Sesuaikan path jika perlu
 
 export default function CardProductUser() {
@@ -124,7 +124,7 @@ export default function CardProductUser() {
                         <h1 className="text-lg font-bold text-blue-500">Today's</h1>
                     </div>
                     <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-2xl font-semibold text-gray-800">Flash Sales</h2>
+                        <h2 className="text-2xl font-semibold text-gray-800">Ourt Products</h2>
                         <Link
                             to="/users/flash-sales" // <-- Path ke halaman baru, disesuaikan dengan routing
                             className="bg-blue-500 hover:bg-blue-500 text-white px-4 py-2 rounded text-sm font-medium transition-colors duration-200"
@@ -150,35 +150,28 @@ export default function CardProductUser() {
                     <h1 className="text-lg font-bold text-blue-500">Today's</h1>
                 </div>
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-2xl font-semibold text-gray-800">Flash Sales</h2>
+                    <h2 className="text-2xl font-semibold text-gray-800">New Arrivals</h2>
                     <div className="flex items-center gap-2 md:gap-3">
                         {/* Tombol View All */}
-                        <Link
-                            to="/users/flash-sales" // <-- Path ke halaman baru, disesuaikan dengan routing
-                            className="px-3 py-1.5 text-sm font-medium text-blue-500 bg-transparent border border-blue-500 rounded-md hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
-                        >
-                            View All
-                        </Link>
-                        {displayProducts.length > 3 && ( // Hanya tampilkan tombol scroll jika item lebih dari yang terlihat (misal 3-4 item)
-                            <>
-                                <button
-                                    onClick={scrollLeft}
-                                    className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-blue-500 hover:bg-purple-100 hover:border-purple-300 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    disabled={!canScrollLeft}
-                                    aria-label="Scroll Left"
-                                >
-                                    <ChevronLeft size={18} />
-                                </button>
-                                <button
-                                    onClick={scrollRight}
-                                    className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-blue-500 hover:bg-purple-100 hover:border-purple-300 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    disabled={!canScrollRight}
-                                    aria-label="Scroll Right"
-                                >
-                                    <ChevronRight size={18} />
-                                </button>
-                            </>
-                        )}
+                        <>
+                            <button
+                                onClick={scrollLeft}
+                                className="w-8 h-8 rounded-full border border-black flex items-center justify-center text-blue-500 hover:bg-purple-100 hover:border-purple-300 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled={!canScrollLeft}
+                                aria-label="Scroll Left"
+                            >
+                                <ChevronLeft size={18} />
+                            </button>
+                            <button
+                                onClick={scrollRight}
+                                className="w-8 h-8 rounded-full border border-black flex items-center justify-center text-blue-500 hover:bg-purple-100 hover:border-purple-300 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled={!canScrollRight}
+                                aria-label="Scroll Right"
+                            >
+                                <ChevronRight size={18} />
+                            </button>
+                        </>
+
                     </div>
                 </div>
             </div>
