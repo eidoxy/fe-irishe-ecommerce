@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import {  Menu, X, Heart, ShoppingCart } from 'lucide-react';
+import { Link } from "react-router";
 
 const Header = () => {
   // const [searchQuery,] = useState('');
@@ -47,9 +48,10 @@ const Header = () => {
 
         {/* Navigation links - Desktop */}
         <nav className="text-white hidden md:flex space-x-6 lg:space-x-10">
-          <a href="/users" className="hover:text-blue-500 transition-colors duration-200 font-medium">Home</a>
-          <a href="/users/flash-sales" className="hover:text-blue-500 transition-colors duration-200 font-medium">Catalog</a>
+          <Link to="/" className="hover:text-blue-500 transition-colors duration-200 font-medium">Home</Link>
+          <Link to="/catalog" className="hover:text-blue-500 transition-colors duration-200 font-medium">Catalog</Link>
           <a href="#about" className="hover:text-blue-500 transition-colors duration-200 font-medium">About</a>
+          {/* <a href="/signup" className="hover:text-blue-800 transition-colors duration-200 font-medium">Sign Up</a> */}
           {/* <a href="/signup" className="hover:text-blue-800 transition-colors duration-200 font-medium">Sign Up</a> */}
         </nav>
 
