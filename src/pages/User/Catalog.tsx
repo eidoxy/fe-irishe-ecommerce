@@ -96,15 +96,18 @@ export default function Catalog() {
                     <div className="flex flex-wrap justify-start gap-4">
                         {products.map((product) => (
                             <div key={product.id} className="w-64 md:w-52">
-                                <CardProduct
-                                    imageSrc={product.imageUrl || "/images/placeholder.png"} // Fallback jika imageUrl kosong
-                                    title={product.name}
-                                    price={`$${product.price.toFixed(2)}`} // Format harga
-                                    oldPrice="" // Tidak ada di Product type
-                                    discount=""  // Tidak ada di Product type
-                                    rating={0}   // Tidak ada di Product type
-                                    reviewCount={0} // Tidak ada di Product type
-                                />
+                                <Link to={`/product/${product.id}`} key={product.id} className="flex-shrink-0 w-60 md:w-64">
+                                    <CardProduct
+                                        // id={product.id}
+                                        imageSrc={product.imageUrl || "/images/placeholder.png"}
+                                        title={product.name}
+                                        price={`$${product.price.toFixed(2)}`}
+                                        oldPrice=""
+                                        discount=""
+                                        rating={0}
+                                        reviewCount={0}
+                                    />
+                                </Link>
                             </div>
                         ))}
                     </div>

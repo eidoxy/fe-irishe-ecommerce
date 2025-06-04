@@ -17,6 +17,7 @@ import EditProduct from "./pages/Admin/Products/EditProduct";
 import Categories from "./pages/Admin/Categories/Index";
 import HomeProduct from "./pages/User/Home";
 import Catalog from "./pages/User/Catalog"; 
+import ProductDetail from "./pages/User/ProductsDetail";
 import "./assets/toasty.css"
 
 export default function App() {
@@ -40,6 +41,7 @@ export default function App() {
           {/* Home Page */}
           <Route index path="/" element={<HomeProduct />} />
           <Route path="/catalog" element={<Catalog />} />
+          <Route path="/product/:id" element={<ProductDetail />} />
 
           {/* Dashboard Layout */}
           <Route

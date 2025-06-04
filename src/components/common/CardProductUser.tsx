@@ -126,7 +126,7 @@ export default function CardProductUser() {
                     <div className="flex justify-between items-center mb-6">
                         <h2 className="text-2xl font-semibold text-gray-800">Ourt Products</h2>
                         <Link
-                            to="/users/flash-sales" // <-- Path ke halaman baru, disesuaikan dengan routing
+                            to="/catalog"// <-- Path ke halaman baru, disesuaikan dengan routing
                             className="bg-blue-500 hover:bg-blue-500 text-white px-4 py-2 rounded text-sm font-medium transition-colors duration-200"
                         >
                             View All
@@ -187,15 +187,17 @@ export default function CardProductUser() {
                 <div className="flex gap-6 pb-4">
                     {products.map((product) => (
                         <div key={product.id} className="flex-shrink-0 w-60 md:w-64">
-                            <CardProduct
-                                imageSrc={product.imageUrl || "/images/placeholder.png"} // Fallback jika imageUrl kosong
-                                title={product.name}
-                                price={`$${product.price.toFixed(2)}`} // Format harga
-                                oldPrice="" // Tidak ada di Product type
-                                discount=""  // Tidak ada di Product type
-                                rating={0}   // Tidak ada di Product type
-                                reviewCount={0} // Tidak ada di Product type
-                            />
+                            <Link to={`/product/${product.id}`} key={product.id} className="flex-shrink-0 w-60 md:w-64">
+                                <CardProduct
+                                    imageSrc={product.imageUrl || "/images/placeholder.png"}
+                                    title={product.name}
+                                    price={`$${product.price.toFixed(2)}`}
+                                    oldPrice=""
+                                    discount=""
+                                    rating={0}
+                                    reviewCount={0}
+                                />
+                            </Link>
                         </div>
                     ))}
                 </div>
