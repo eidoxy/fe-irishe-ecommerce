@@ -20,6 +20,7 @@ import {
   ProductFormData,
 } from "../../../models/form.model.ts";
 
+import { AuthService } from "../../../utils/authService.ts";
 interface FormEditProductProps {
   productId?: number | null;
 }
@@ -62,11 +63,22 @@ export default function FormEditProduct({ productId }: FormEditProductProps) {
         return;
       }
 
+      // Check authentication before fetching product
+      if (!AuthService.isAuthenticated()) {
+        toast.error("You must be logged in to edit products.", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+        navigate('/login');
+        return;
+      }
+
       setLoadingProduct(true);
       setProductError(null);
       
       try {
-        const response = await fetch(`http://47.128.233.82:3000/api/products/${productId}`);
+        const response = await AuthService.authenticatedFetch(`https://be-irishe.seido.my.id/api/products/${productId}`);
+
         if (!response.ok) {
           throw new Error(`Failed to fetch product: ${response.statusText}`);
         }
@@ -87,21 +99,42 @@ export default function FormEditProduct({ productId }: FormEditProductProps) {
       } catch (error) {
         console.error("Error fetching product:", error);
         setProductError(error instanceof Error ? error.message : "An unknown error occurred");
+
+        // Handle authentication errors
+        if (error instanceof Error && error.message.includes('401')) {
+          toast.error("Session expired. Please sign in again.", {
+            position: "top-right",
+            autoClose: 3000,
+          });
+          navigate('/signin');
+        }
       } finally {
         setLoadingProduct(false);
       }
     };
 
     fetchProduct();
-  }, [productId]);
+  }, [productId, navigate]);
   
   // Fetch categories for the select input
   useEffect(() => {
     const fetchCategories = async () => {
+      // Check authentication before fetching
+      if (!AuthService.isAuthenticated()) {
+        toast.error("Please sign in to access this page.", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+        navigate('/signin');
+        return;
+      }
+      
       setLoadingCategories(true);
       setCategoryError(null);
       try {
-        const response = await fetch("http://47.128.233.82:3000/api/categories");
+        // Use AuthService for authenticated API call
+        const response = await AuthService.authenticatedFetch("https://be-irishe.seido.my.id/api/categories");
+        
         if (!response.ok) {
           throw new Error(`Failed to fetch categories: ${response.statusText}`);
         }
@@ -116,13 +149,22 @@ export default function FormEditProduct({ productId }: FormEditProductProps) {
       } catch (error) {
         console.error("Error fetching categories:", error);
         setCategoryError(error instanceof Error ? error.message : "An unknown error occurred");
+
+        // Handle authentication errors
+        if (error instanceof Error && error.message.includes('401')) {
+          toast.error("Session expired. Please sign in again.", {
+            position: "top-right",
+            autoClose: 3000,
+          });
+          navigate('/signin');
+        }
       } finally {
         setLoadingCategories(false);
       }
     };
 
     fetchCategories();
-  }, []);
+  }, [navigate]);
 
   // Form validation function
   const validateForm = (): boolean => {
@@ -194,26 +236,6 @@ export default function FormEditProduct({ productId }: FormEditProductProps) {
     return apiFormData;
   };
 
-  // Reset form function to initial state
-  const resetForm = (): void => {
-    setFormData({
-      categoryId: 0,
-      name: "",
-      description: null,
-      stock: "",
-      price: "",
-      imageFile: null,
-    });
-    setErrors({
-      name: "",
-      description: "",
-      category: "",
-      stock: "",
-      price: "",
-      image: ""
-    });
-  };
-
   // Update form data helper function
   const updateFormData = (updates: Partial<ProductFormData>): void => {
     setFormData(prev => ({ ...prev, ...updates }));
@@ -255,6 +277,16 @@ export default function FormEditProduct({ productId }: FormEditProductProps) {
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
 
+    // Check authentication before submission
+    if (!AuthService.isAuthenticated()) {
+      toast.error("Session expired. Please sign in again.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      navigate('/signin');
+      return;
+    }
+    
     // Validate form before submission
     if (!validateForm()) {
       return;
@@ -264,12 +296,39 @@ export default function FormEditProduct({ productId }: FormEditProductProps) {
     
     try {
       const apiFormData = createApiFormData();
-      console.log("Submitting FormData:", Object.fromEntries(apiFormData.entries()));
 
-      const response = await fetch(`http://47.128.233.82:3000/api/products/update/${productId}`, {
+      // Get authentication headers
+      const token = AuthService.getToken();
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+
+      const response = await fetch(`https://be-irishe.seido.my.id/api/products/update/${productId}`, {
         method: "PUT",
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
         body: apiFormData,
       });
+
+      // Handle authentication errors
+      if (response.status === 401) {
+        AuthService.logout(); // Clear invalid token
+        toast.error("Session expired. Please sign in again.", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+        navigate('/signin');
+        return;
+      }
+
+      if (response.status === 403) {
+        toast.error("You don't have permission to edit this product.", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+        return;
+      }
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ 
@@ -289,24 +348,32 @@ export default function FormEditProduct({ productId }: FormEditProductProps) {
         pauseOnHover: true,
         draggable: false,
       });
-      
-      resetForm();
 
       setTimeout(() => {
-        navigate('/products');
+        navigate('/admin/products');
       }, 1500);
     } catch (error) {
       console.error("Error submitting form:", error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
 
-      toast.error(`❌ Failed to create product: ${errorMessage}`, {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: false,
-      });
+      // Handle specific error cases
+      if (errorMessage.includes('401') || errorMessage.includes('unauthorized')) {
+        AuthService.logout();
+        toast.error("Session expired. Please sign in again.", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+        navigate('/signin');
+      } else {
+        toast.error(`❌ Failed to update product: ${errorMessage}`, {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: false,
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }

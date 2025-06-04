@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router";
 import Label from "../Label";
 import Input from "../input/InputField";
 import TextArea from "../input/TextArea";
 import { CategoryFormData } from "../../../models/form.model";
 import { Category } from "../../../models/category.model";
 
+import { AuthService } from "../../../utils/authService";
 
 interface ModalFormCategoryProps {
   isOpen: boolean;
@@ -22,6 +24,8 @@ export default function ModalFormCategory({
   category = null,
   mode = 'create'
 }: ModalFormCategoryProps) {
+  const navigate = useNavigate();
+  
   const [formData, setFormData] = useState<CategoryFormData>({
     name: "",
     description: ""
@@ -34,7 +38,6 @@ export default function ModalFormCategory({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Determine if we're in edit mode
   const isEditMode = mode === 'edit' || category !== null;
   const modalTitle = isEditMode ? `Edit Category${category ? `: ${category.name}` : ''}` : 'Create New Category';
   const submitButtonText = isEditMode ? 'Update Category' : 'Create Category';
@@ -43,6 +46,17 @@ export default function ModalFormCategory({
   // Update form data when category changes or modal opens
   useEffect(() => {
     if (isOpen) {
+      // Check authentication before allowing access
+      if (!AuthService.isAuthenticated()) {
+        toast.error("Please sign in to access this feature.", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+        onClose();
+        navigate('/signin');
+        return;
+      }
+      
       if (isEditMode && category) {
         setFormData({
           name: category.name,
@@ -62,7 +76,7 @@ export default function ModalFormCategory({
         description: ""
       });
     }
-  }, [isOpen, category, isEditMode]);
+  }, [isOpen, category, isEditMode, navigate, onClose]);
 
   // Clear form when modal closes
   useEffect(() => {
@@ -89,7 +103,7 @@ export default function ModalFormCategory({
 
     if (isOpen) {
       document.addEventListener('keydown', handleEsc);
-      document.body.style.overflow = 'hidden'; // Prevent background scroll
+      document.body.style.overflow = 'hidden';
     }
 
     return () => {
@@ -141,6 +155,17 @@ export default function ModalFormCategory({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Check authentication before submission
+    if (!AuthService.isAuthenticated()) {
+      toast.error("Session expired. Please sign in again.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      onClose();
+      navigate('/signin');
+      return;
+    }
+    
     if (!validateForm()) {
       return;
     }
@@ -149,23 +174,52 @@ export default function ModalFormCategory({
 
     try {
       const url = isEditMode && category 
-        ? `http://47.128.233.82:3000/api/categories/update/${category.id}`
-        : 'http://47.128.233.82:3000/api/categories/create';
+        ? `https://be-irishe.seido.my.id/api/categories/update/${category.id}`
+        : 'https://be-irishe.seido.my.id/api/categories/create';
       
       const method = isEditMode ? 'PUT' : 'POST';
 
       const payload = {
         name: formData.name.trim(),
-        description: formData.description?.trim() || null // Send null if empty
+        description: formData.description?.trim() || null
       };
+
+      // Get authentication token
+      const token = AuthService.getToken();
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+      
+      console.log(`${isEditMode ? 'Updating' : 'Creating'} category with payload:`, payload);
 
       const response = await fetch(url, {
         method,
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });
+
+      // Handle authentication errors
+      if (response.status === 401) {
+        AuthService.logout(); // Clear invalid token
+        toast.error("Session expired. Please sign in again.", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+        onClose();
+        navigate('/signin');
+        return;
+      }
+
+      if (response.status === 403) {
+        toast.error("You don't have permission to manage categories.", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+        return;
+      }
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
@@ -182,6 +236,10 @@ export default function ModalFormCategory({
       toast.success(successMessage, {
         position: "top-right",
         autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: false,
       });
 
       onSuccess();
@@ -190,14 +248,29 @@ export default function ModalFormCategory({
       console.error(`Error ${isEditMode ? 'updating' : 'creating'} category:`, error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       
-      const errorToastMessage = isEditMode 
-        ? `Failed to update category: ${errorMessage}`
-        : `Failed to create category: ${errorMessage}`;
+      // Handle specific error cases
+      if (errorMessage.includes('401') || errorMessage.includes('unauthorized')) {
+        AuthService.logout();
+        toast.error("Session expired. Please sign in again.", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+        onClose();
+        navigate('/signin');
+      } else {
+        const errorToastMessage = isEditMode 
+          ? `❌ Failed to update category: ${errorMessage}`
+          : `❌ Failed to create category: ${errorMessage}`;
 
-      toast.error(errorToastMessage, {
-        position: "top-right",
-        autoClose: 5000,
-      });
+        toast.error(errorToastMessage, {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: false,
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -206,15 +279,16 @@ export default function ModalFormCategory({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center">
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+        className="fixed inset-0 bg-black/50 transition-opacity"
         onClick={onClose}
+        aria-hidden="true"
       />
       
       {/* Modal */}
-      <div className="relative z-51 w-full max-w-md mx-4">
+      <div className="relative z-[10000] w-full max-w-md mx-4">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl transform transition-all">
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
