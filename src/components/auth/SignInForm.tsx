@@ -7,6 +7,7 @@ import Input from "../form/input/InputField";
 import Checkbox from "../form/input/Checkbox";
 import Button from "../ui/button/Button";
 
+
 interface LoginResponse {
   status: string;
   message: string;
@@ -99,7 +100,7 @@ export default function SignInForm() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://47.128.233.82:3000/api/admin/login", {
+      const response = await fetch("https://be-irishe.seido.my.id/api/admin/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
