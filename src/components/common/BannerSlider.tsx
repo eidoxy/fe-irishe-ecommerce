@@ -17,13 +17,13 @@ const bannerData: BannerDataProps[] = [
     },
     {
         id: 2,
-        imageSrc: "/images/product/banner-01.jpg",
+        imageSrc: "/images/product/banner-02.jpg",
         title: "",
         description: "",
     },
     {
         id: 3,
-        imageSrc: "/images/product/banner-01.jpg",
+        imageSrc: "/images/product/banner-03.jpg",
         title: "",
         description: "",
     },

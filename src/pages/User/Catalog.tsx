@@ -59,7 +59,7 @@ export default function Catalog() {
 
     // Sort function
     const applySort = (list: Product[], order: string) => {
-        let sortedList = [...list];
+        const sortedList = [...list];
         switch (order) {
             case "name-asc":
                 sortedList.sort((a, b) => a.name.localeCompare(b.name));
@@ -134,7 +134,7 @@ export default function Catalog() {
     return (
         <>
             <Header />
-            <div className="container px-2 sm:px-6 md:px-8 lg:px-12 xl:px-20 py-8">
+            <div className="container mx-auto px-2 sm:px-6 md:px-8 lg:px-12 xl:px-20 py-8">
                 <div className="mb-6 md:mb-8">
                     <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-4">
                         <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Our Products</h1>
